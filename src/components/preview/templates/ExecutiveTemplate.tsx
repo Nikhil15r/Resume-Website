@@ -1,6 +1,15 @@
 import React from 'react';
 import { CVDocument } from '../../../types/cv';
 
+const ExecutiveSectionHeader: React.FC<{ title: string; className?: string }> = ({ title, className = 'mb-2.5' }) => (
+  <div className={className}>
+    <h2 className="text-[9.5pt] font-bold uppercase tracking-[0.12em] text-[#0A0A0A] leading-none select-none">
+      {title}
+    </h2>
+    <div className="w-full h-[0.75pt] bg-[#1A1A1A] mt-1" />
+  </div>
+);
+
 export const ExecutiveTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
   const { personalInfo, summary, experience, education, skills, projects, certifications, awards, settings } = doc;
 
@@ -53,9 +62,7 @@ export const ExecutiveTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
         {/* Core Competencies Matrix */}
         {skills.length > 0 && (
           <section className="mb-3.5">
-            <div className="text-[9.5pt] font-bold uppercase tracking-[0.12em] text-[#0A0A0A] pb-1 mb-2 border-b border-[#E5E3DF]">
-              Executive Core Competencies &amp; Governance
-            </div>
+            <ExecutiveSectionHeader title="Executive Core Competencies & Governance" />
             <div className="grid grid-cols-3 gap-3 font-sans text-[8.2pt] bg-[#F5F5F3] p-3 rounded-sm border border-[#E5E3DF]">
               {skills.map(sk => (
                 <div key={sk.id}>
@@ -79,24 +86,22 @@ export const ExecutiveTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
         {/* Executive Career History (First Roles) */}
         {experience.length > 0 && (
           <section className="mb-2">
-            <div className="text-[9.5pt] font-bold uppercase tracking-[0.12em] text-[#0A0A0A] pb-1 mb-2 border-b border-[#E5E3DF]">
-              Executive Career History &amp; P&amp;L Leadership
-            </div>
+            <ExecutiveSectionHeader title="Executive Career History & P&L Leadership" />
             <div className="space-y-3.5">
               {experience.slice(0, 2).map(exp => (
                 <div key={exp.id}>
-                  <div className="flex justify-between items-baseline">
+                  <div className="flex justify-between items-baseline leading-tight">
                     <span className="font-bold text-[10.5pt] text-[#0A0A0A]">{exp.role}</span>
                     <span className="text-[8.5pt] font-sans font-medium text-[#4A4845]">
                       {exp.startDate} – {exp.current ? 'Present' : exp.endDate}
                     </span>
                   </div>
-                  <div className="flex justify-between items-baseline mb-1 text-[9pt]">
+                  <div className="flex justify-between items-baseline mb-1 text-[9pt] mt-0.5">
                     <span className="italic font-serif text-[#8C8172]">{exp.company}</span>
                     <span className="text-[8.5pt] font-sans text-[#807D7A]">{exp.location}</span>
                   </div>
                   {exp.description && (
-                    <p className="text-[8.8pt] font-sans text-[#333] mb-1 leading-snug">
+                    <p className="text-[8.8pt] font-sans text-[#333] mb-1.5 leading-relaxed">
                       {exp.description}
                     </p>
                   )}
@@ -118,7 +123,7 @@ export const ExecutiveTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
           </section>
         )}
 
-        <div className="absolute bottom-4 right-8 text-[8pt] font-serif text-[#807D7A]">
+        <div className="absolute bottom-4 right-8 text-[8pt] font-serif text-[#807D7A] select-none">
           Page 1 of 2
         </div>
       </div>
@@ -135,7 +140,7 @@ export const ExecutiveTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
         }}
       >
         {/* Running Header */}
-        <div className="flex justify-between items-baseline pb-2.5 mb-4 border-b border-[#0A0A0A] text-[9pt] font-sans text-[#666]">
+        <div className="flex justify-between items-baseline pb-2 mb-4 border-b border-[#0A0A0A] text-[9pt] font-sans text-[#666]">
           <span className="font-serif font-semibold text-[#0A0A0A] uppercase tracking-wider">
             {personalInfo.fullName}
           </span>
@@ -145,19 +150,17 @@ export const ExecutiveTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
         {/* Remaining Experience */}
         {experience.length > 2 && (
           <section className="mb-4">
-            <div className="text-[9.5pt] font-bold uppercase tracking-[0.12em] text-[#0A0A0A] pb-1 mb-2 border-b border-[#E5E3DF]">
-              Career History (Continued)
-            </div>
+            <ExecutiveSectionHeader title="Career History (Continued)" />
             <div className="space-y-3">
               {experience.slice(2).map(exp => (
                 <div key={exp.id}>
-                  <div className="flex justify-between items-baseline">
+                  <div className="flex justify-between items-baseline leading-tight">
                     <span className="font-bold text-[10.5pt] text-[#0A0A0A]">{exp.role}</span>
                     <span className="text-[8.5pt] font-sans font-medium text-[#4A4845]">
                       {exp.startDate} – {exp.current ? 'Present' : exp.endDate}
                     </span>
                   </div>
-                  <div className="flex justify-between items-baseline mb-1 text-[9pt]">
+                  <div className="flex justify-between items-baseline mb-1 text-[9pt] mt-0.5">
                     <span className="italic font-serif text-[#8C8172]">{exp.company}</span>
                     <span className="text-[8.5pt] font-sans text-[#807D7A]">{exp.location}</span>
                   </div>
@@ -182,19 +185,17 @@ export const ExecutiveTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
         {/* Transformational Programs & Architecture */}
         {projects.length > 0 && (
           <section className="mb-4">
-            <div className="text-[9.5pt] font-bold uppercase tracking-[0.12em] text-[#0A0A0A] pb-1 mb-2 border-b border-[#E5E3DF]">
-              Transformational Programs &amp; Architecture
-            </div>
+            <ExecutiveSectionHeader title="Transformational Programs & Architecture" />
             <div className="space-y-2.5">
               {projects.map(proj => (
                 <div key={proj.id} className="text-[8.5pt] font-sans">
-                  <div className="flex justify-between font-semibold text-[#0A0A0A]">
+                  <div className="flex justify-between font-semibold text-[#0A0A0A] leading-tight">
                     <span>
                       {proj.title} <span className="font-normal italic text-[#8C8172]">({proj.role})</span>
                     </span>
                     <span className="text-[8pt] text-[#807D7A]">{proj.startDate} – {proj.endDate}</span>
                   </div>
-                  <p className="text-[#333] my-0.5">{proj.description}</p>
+                  <p className="text-[#333] my-1 leading-relaxed">{proj.description}</p>
                   {proj.highlights.length > 0 && (
                     <div className="space-y-0.5 text-[8pt] text-[#444] ml-0.5">
                       {proj.highlights.map((h, i) => (
@@ -214,15 +215,13 @@ export const ExecutiveTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
         {/* Education & Academic Distinctions */}
         {education.length > 0 && (
           <section className="mb-4">
-            <div className="text-[9.5pt] font-bold uppercase tracking-[0.12em] text-[#0A0A0A] pb-1 mb-2 border-b border-[#E5E3DF]">
-              Education &amp; Academic Distinctions
-            </div>
+            <ExecutiveSectionHeader title="Education & Academic Distinctions" />
             <div className="grid grid-cols-2 gap-4 text-[8.8pt] font-sans">
               {education.map(edu => (
                 <div key={edu.id}>
-                  <div className="font-semibold text-[#0A0A0A]">{edu.school}</div>
-                  <div className="text-[#4A4845]">{edu.degree}, {edu.field}</div>
-                  <div className="text-[8pt] text-[#807D7A]">
+                  <div className="font-semibold text-[#0A0A0A] leading-tight">{edu.school}</div>
+                  <div className="text-[#4A4845] mt-0.5">{edu.degree}, {edu.field}</div>
+                  <div className="text-[8pt] text-[#807D7A] mt-0.5">
                     {edu.location} • {edu.startDate} – {edu.endDate}
                   </div>
                   {edu.honors && <div className="text-[8pt] text-[#8C8172] mt-0.5">{edu.honors}</div>}
@@ -251,7 +250,7 @@ export const ExecutiveTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
           </section>
         )}
 
-        <div className="absolute bottom-4 right-8 text-[8pt] font-serif text-[#807D7A]">
+        <div className="absolute bottom-4 right-8 text-[8pt] font-serif text-[#807D7A] select-none">
           Page 2 of 2
         </div>
       </div>

@@ -19,6 +19,15 @@ export async function downloadPdfDirect(
     return;
   }
 
+  // Ensure all web fonts are fully loaded and rendered before capturing
+  if (document.fonts) {
+    try {
+      await document.fonts.ready;
+    } catch (e) {
+      console.warn('Document fonts ready error:', e);
+    }
+  }
+
   const isA4 = doc.settings.paperSize === 'a4';
   const pageWidth = isA4 ? 210 : 215.9; // mm
   const pageHeight = isA4 ? 297 : 279.4; // mm
@@ -42,13 +51,19 @@ export async function downloadPdfDirect(
         pdf.addPage();
       }
 
+      const sheetWidth = sheet.offsetWidth;
+      const sheetHeight = sheet.offsetHeight;
+
       const canvas = await html2canvas(sheet, {
         scale: 2, // 2x high-resolution capture for crisp typography
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#FFFFFF',
         logging: false,
-        windowWidth: 1200,
+        width: sheetWidth,
+        height: sheetHeight,
+        scrollX: 0,
+        scrollY: 0,
         onclone: (clonedDoc) => {
           // Remove parent transforms so capture is unwarped at 1:1 scale
           const clonedSheets = clonedDoc.querySelectorAll<HTMLElement>('.cv-page-sheet');
@@ -59,6 +74,10 @@ export async function downloadPdfDirect(
               parent.style.transform = 'none';
               parent = parent.parentElement;
             }
+            // Strip any browser preview border or shadow on the exported PDF sheet
+            targetClonedSheet.style.boxShadow = 'none';
+            targetClonedSheet.style.border = 'none';
+            targetClonedSheet.style.margin = '0';
           }
         }
       });
@@ -88,8 +107,18 @@ export async function downloadCoverLetterPdfDirect(
     return;
   }
 
+  if (document.fonts) {
+    try {
+      await document.fonts.ready;
+    } catch (e) {
+      console.warn('Fonts ready check:', e);
+    }
+  }
+
   const pageWidth = 210; // mm A4
   const pageHeight = 297; // mm A4
+  const sheetWidth = element.offsetWidth;
+  const sheetHeight = element.offsetHeight;
 
   try {
     const canvas = await html2canvas(element, {
@@ -98,7 +127,10 @@ export async function downloadCoverLetterPdfDirect(
       allowTaint: true,
       backgroundColor: '#FFFFFF',
       logging: false,
-      windowWidth: 1200,
+      width: sheetWidth,
+      height: sheetHeight,
+      scrollX: 0,
+      scrollY: 0,
       onclone: (clonedDoc) => {
         const clonedEl = clonedDoc.getElementById(elementId);
         if (clonedEl) {
@@ -107,6 +139,9 @@ export async function downloadCoverLetterPdfDirect(
             parent.style.transform = 'none';
             parent = parent.parentElement;
           }
+          clonedEl.style.boxShadow = 'none';
+          clonedEl.style.border = 'none';
+          clonedEl.style.margin = '0';
         }
       }
     });

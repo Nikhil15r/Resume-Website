@@ -1,6 +1,16 @@
 import React from 'react';
 import { CVDocument } from '../../../types/cv';
 
+// Reusable standardized Section Header component
+const SectionHeader: React.FC<{ title: string; className?: string }> = ({ title, className = 'mb-2.5' }) => (
+  <div className={className}>
+    <h2 className="text-[10pt] font-bold uppercase tracking-[0.08em] text-[#0A0A0A] leading-none select-none">
+      {title}
+    </h2>
+    <div className="w-full h-[0.75pt] bg-[#1A1A1A] mt-1" />
+  </div>
+);
+
 export const CorporateClassicTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
   const { personalInfo, summary, experience, education, skills, projects, certifications, publications, awards, settings } = doc;
 
@@ -30,14 +40,14 @@ export const CorporateClassicTemplate: React.FC<{ doc: CVDocument }> = ({ doc })
         }}
       >
         {/* Header */}
-        <header className="text-center pb-3.5 mb-4 border-b border-[#0A0A0A]">
-          <h1 className="text-[25pt] font-semibold tracking-[-0.01em] text-[#0A0A0A] uppercase mb-1">
+        <header className="text-center mb-4">
+          <h1 className="text-[25pt] font-semibold tracking-[-0.01em] text-[#0A0A0A] uppercase mb-1 leading-none">
             {personalInfo.fullName}
           </h1>
-          <p className="text-[11pt] italic text-[#4A4845] font-sans tracking-wide mb-2">
+          <p className="text-[11pt] italic text-[#4A4845] font-sans tracking-wide mt-1.5 mb-2 leading-tight">
             {personalInfo.title}
           </p>
-          <div className="flex flex-wrap justify-center items-center gap-y-1 text-[8.5pt] font-sans text-[#4A4845]">
+          <div className="flex flex-wrap justify-center items-center gap-y-1 text-[8.5pt] font-sans text-[#4A4845] mb-2.5 leading-normal">
             {contactItems.map((item, idx) => (
               <React.Fragment key={idx}>
                 {idx > 0 && <span className="mx-2 text-[#807D7A] select-none">•</span>}
@@ -51,14 +61,13 @@ export const CorporateClassicTemplate: React.FC<{ doc: CVDocument }> = ({ doc })
               </React.Fragment>
             ))}
           </div>
+          <div className="w-full h-[0.75pt] bg-[#1A1A1A]" />
         </header>
 
         {/* Executive Summary */}
         {summary && (
           <section className="mb-4">
-            <h2 className="text-[10.5pt] font-bold uppercase tracking-[0.08em] text-[#0A0A0A] pb-0.5 mb-1.5 border-b border-[#D1CECA]">
-              Executive Summary
-            </h2>
+            <SectionHeader title="Executive Summary" />
             <p className="text-[9.2pt] text-[#2A2927] leading-[1.5] text-justify font-sans">
               {summary}
             </p>
@@ -68,24 +77,22 @@ export const CorporateClassicTemplate: React.FC<{ doc: CVDocument }> = ({ doc })
         {/* Professional Experience */}
         {experience.length > 0 && (
           <section className="mb-2">
-            <h2 className="text-[10.5pt] font-bold uppercase tracking-[0.08em] text-[#0A0A0A] pb-0.5 mb-2.5 border-b border-[#D1CECA]">
-              Professional Experience
-            </h2>
+            <SectionHeader title="Professional Experience" />
             <div className="space-y-3.5">
               {experience.map(exp => (
                 <div key={exp.id}>
-                  <div className="flex justify-between items-baseline">
+                  <div className="flex justify-between items-baseline leading-tight">
                     <span className="font-bold text-[10.5pt] text-[#0A0A0A]">{exp.role}</span>
-                    <span className="text-[9pt] font-sans text-[#4A4845]">
+                    <span className="text-[8.8pt] font-sans text-[#4A4845]">
                       {exp.startDate} – {exp.current ? 'Present' : exp.endDate}
                     </span>
                   </div>
-                  <div className="flex justify-between items-baseline mb-1 text-[9.5pt]">
+                  <div className="flex justify-between items-baseline mb-1 text-[9.5pt] mt-0.5">
                     <span className="italic text-[#333] font-serif">{exp.company}</span>
-                    <span className="text-[9pt] font-sans text-[#666]">{exp.location}</span>
+                    <span className="text-[8.8pt] font-sans text-[#666]">{exp.location}</span>
                   </div>
                   {exp.description && (
-                    <p className="text-[8.8pt] font-sans text-[#3A3937] mb-1 italic">
+                    <p className="text-[8.8pt] font-sans text-[#3A3937] mb-1.5 italic leading-relaxed">
                       {exp.description}
                     </p>
                   )}
@@ -108,7 +115,7 @@ export const CorporateClassicTemplate: React.FC<{ doc: CVDocument }> = ({ doc })
         )}
 
         {/* Page Footer (Page number only) */}
-        <div className="absolute bottom-4 right-8 text-[8pt] font-serif text-[#807D7A]">
+        <div className="absolute bottom-4 right-8 text-[8pt] font-serif text-[#807D7A] select-none">
           Page 1 of 2
         </div>
       </div>
@@ -125,7 +132,7 @@ export const CorporateClassicTemplate: React.FC<{ doc: CVDocument }> = ({ doc })
         }}
       >
         {/* Running Header on Page 2 */}
-        <div className="flex justify-between items-baseline pb-2.5 mb-4 border-b border-[#0A0A0A] text-[9pt] font-sans text-[#666]">
+        <div className="flex justify-between items-baseline pb-2 mb-4 border-b border-[#1A1A1A] text-[9pt] font-sans text-[#666]">
           <span className="font-serif font-semibold text-[#0A0A0A] uppercase tracking-wider">
             {personalInfo.fullName}
           </span>
@@ -135,21 +142,19 @@ export const CorporateClassicTemplate: React.FC<{ doc: CVDocument }> = ({ doc })
         {/* Education */}
         {education.length > 0 && (
           <section className="mb-4">
-            <h2 className="text-[10.5pt] font-bold uppercase tracking-[0.08em] text-[#0A0A0A] pb-0.5 mb-2 border-b border-[#D1CECA]">
-              Education &amp; Academic Credentials
-            </h2>
+            <SectionHeader title="Education & Academic Credentials" />
             <div className="space-y-2.5">
               {education.map(edu => (
                 <div key={edu.id}>
-                  <div className="flex justify-between items-baseline">
+                  <div className="flex justify-between items-baseline leading-tight">
                     <span className="font-bold text-[10pt] text-[#0A0A0A]">{edu.school}</span>
-                    <span className="text-[9pt] font-sans text-[#4A4845]">
+                    <span className="text-[8.8pt] font-sans text-[#4A4845]">
                       {edu.startDate} – {edu.endDate}
                     </span>
                   </div>
-                  <div className="flex justify-between items-baseline text-[9.5pt]">
+                  <div className="flex justify-between items-baseline text-[9.5pt] mt-0.5">
                     <span className="italic text-[#333]">{edu.degree}, {edu.field}</span>
-                    <span className="text-[9pt] font-sans text-[#666]">{edu.location}</span>
+                    <span className="text-[8.8pt] font-sans text-[#666]">{edu.location}</span>
                   </div>
                   {edu.honors && (
                     <p className="text-[8.5pt] font-sans text-[#4A4845] mt-0.5">
@@ -165,13 +170,11 @@ export const CorporateClassicTemplate: React.FC<{ doc: CVDocument }> = ({ doc })
         {/* Areas of Expertise / Skills */}
         {skills.length > 0 && (
           <section className="mb-4">
-            <h2 className="text-[10.5pt] font-bold uppercase tracking-[0.08em] text-[#0A0A0A] pb-0.5 mb-2 border-b border-[#D1CECA]">
-              Areas of Expertise &amp; Core Competencies
-            </h2>
+            <SectionHeader title="Areas of Expertise & Core Competencies" />
             <div className="space-y-1.5 font-sans text-[8.8pt]">
               {skills.map(sk => (
                 <div key={sk.id} className="flex flex-wrap items-baseline gap-1.5">
-                  <span className="font-semibold text-[#0A0A0A]">{sk.category}:</span>
+                  <span className="font-semibold text-[#0A0A0A] shrink-0">{sk.category}:</span>
                   <span className="text-[#333]">{sk.items.join(' • ')}</span>
                 </div>
               ))}
@@ -182,19 +185,17 @@ export const CorporateClassicTemplate: React.FC<{ doc: CVDocument }> = ({ doc })
         {/* Strategic Projects & Architecture */}
         {projects.length > 0 && (
           <section className="mb-4">
-            <h2 className="text-[10.5pt] font-bold uppercase tracking-[0.08em] text-[#0A0A0A] pb-0.5 mb-2 border-b border-[#D1CECA]">
-              Strategic Projects &amp; Architecture
-            </h2>
+            <SectionHeader title="Strategic Projects & Architecture" />
             <div className="space-y-3">
               {projects.map(proj => (
                 <div key={proj.id}>
-                  <div className="flex justify-between items-baseline">
+                  <div className="flex justify-between items-baseline leading-tight">
                     <span className="font-bold text-[10pt] text-[#0A0A0A]">{proj.title}</span>
-                    <span className="text-[9pt] font-sans text-[#4A4845]">
+                    <span className="text-[8.8pt] font-sans text-[#4A4845]">
                       {proj.startDate} – {proj.endDate}
                     </span>
                   </div>
-                  <div className="text-[9pt] italic font-serif text-[#4A4845] mb-1">
+                  <div className="text-[9pt] italic font-serif text-[#4A4845] mt-0.5 mb-1">
                     {proj.role}{' '}
                     {proj.techStack && (
                       <span className="font-sans font-normal text-[8pt] text-[#8C8172]">
@@ -202,7 +203,7 @@ export const CorporateClassicTemplate: React.FC<{ doc: CVDocument }> = ({ doc })
                       </span>
                     )}
                   </div>
-                  <p className="text-[8.8pt] font-sans text-[#222] mb-1">{proj.description}</p>
+                  <p className="text-[8.8pt] font-sans text-[#222] mb-1.5 leading-relaxed">{proj.description}</p>
                   {proj.highlights.length > 0 && (
                     <div className="space-y-1 text-[8.5pt] font-sans text-[#333] ml-0.5">
                       {proj.highlights.map((hl, i) => (
@@ -224,9 +225,7 @@ export const CorporateClassicTemplate: React.FC<{ doc: CVDocument }> = ({ doc })
         {/* Accreditations & Publications */}
         {(certifications.length > 0 || publications.length > 0 || awards.length > 0) && (
           <section>
-            <h2 className="text-[10.5pt] font-bold uppercase tracking-[0.08em] text-[#0A0A0A] pb-0.5 mb-2 border-b border-[#D1CECA]">
-              Accreditations, Publications &amp; Honors
-            </h2>
+            <SectionHeader title="Accreditations, Publications & Honors" />
             <div className="space-y-1 font-sans text-[8.5pt] text-[#222]">
               {certifications.map(c => (
                 <div key={c.id}>
@@ -248,7 +247,7 @@ export const CorporateClassicTemplate: React.FC<{ doc: CVDocument }> = ({ doc })
         )}
 
         {/* Page Footer (Page number only) */}
-        <div className="absolute bottom-4 right-8 text-[8pt] font-serif text-[#807D7A]">
+        <div className="absolute bottom-4 right-8 text-[8pt] font-serif text-[#807D7A] select-none">
           Page 2 of 2
         </div>
       </div>

@@ -1,6 +1,15 @@
 import React from 'react';
 import { CVDocument } from '../../../types/cv';
 
+const ConsultingSectionHeader: React.FC<{ title: string; className?: string }> = ({ title, className = 'mb-2.5' }) => (
+  <div className={className}>
+    <h2 className="text-[10pt] font-bold uppercase tracking-[0.1em] text-[#0A0A0A] leading-none select-none">
+      {title}
+    </h2>
+    <div className="w-full h-[0.75pt] bg-[#8C8172] mt-1" />
+  </div>
+);
+
 export const ConsultingTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
   const { personalInfo, summary, experience, education, skills, projects, awards, settings } = doc;
 
@@ -30,10 +39,10 @@ export const ConsultingTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
       >
         {/* Header */}
         <header className="text-center pb-3.5 mb-4 border-b border-[#0A0A0A]">
-          <h1 className="text-[25pt] font-semibold tracking-[-0.01em] uppercase text-[#0A0A0A]">
+          <h1 className="text-[25pt] font-semibold tracking-[-0.01em] uppercase text-[#0A0A0A] leading-none mb-1">
             {personalInfo.fullName}
           </h1>
-          <div className="text-[10pt] font-sans text-[#8C8172] font-medium tracking-[0.05em] uppercase mb-1.5">
+          <div className="text-[10pt] font-sans text-[#8C8172] font-medium tracking-[0.05em] uppercase mt-1 mb-2">
             {personalInfo.title}
           </div>
           <div className="flex flex-wrap justify-center items-center gap-y-1 text-[8.5pt] font-sans text-[#4A4845]">
@@ -55,9 +64,7 @@ export const ConsultingTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
         {/* Strategic Profile */}
         {summary && (
           <section className="mb-4">
-            <div className="text-[10pt] font-bold uppercase tracking-[0.1em] text-[#0A0A0A] pb-0.5 mb-1.5 border-b border-[#8C8172]">
-              Strategic Profile &amp; Practice Focus
-            </div>
+            <ConsultingSectionHeader title="Strategic Profile & Practice Focus" />
             <p className="text-[9pt] font-sans text-[#2A2927] leading-[1.5] text-justify">
               {summary}
             </p>
@@ -67,24 +74,22 @@ export const ConsultingTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
         {/* Management & Advisory Engagements */}
         {experience.length > 0 && (
           <section className="mb-2">
-            <div className="text-[10pt] font-bold uppercase tracking-[0.1em] text-[#0A0A0A] pb-0.5 mb-2 border-b border-[#8C8172]">
-              Management &amp; Advisory Engagements
-            </div>
+            <ConsultingSectionHeader title="Management & Advisory Engagements" />
             <div className="space-y-3.5">
               {experience.map(exp => (
                 <div key={exp.id}>
-                  <div className="flex justify-between items-baseline">
+                  <div className="flex justify-between items-baseline leading-tight">
                     <span className="font-bold text-[10.5pt] text-[#0A0A0A] font-serif">{exp.role}</span>
                     <span className="text-[8.5pt] font-sans text-[#4A4845]">
                       {exp.startDate} – {exp.current ? 'Present' : exp.endDate}
                     </span>
                   </div>
-                  <div className="flex justify-between items-baseline mb-1 text-[9pt] font-sans">
+                  <div className="flex justify-between items-baseline mb-1 text-[9pt] font-sans mt-0.5">
                     <span className="font-semibold text-[#8C8172]">{exp.company}</span>
                     <span className="text-[#807D7A]">{exp.location}</span>
                   </div>
                   {exp.description && (
-                    <p className="text-[8.5pt] font-sans italic text-[#4A4845] mb-1">
+                    <p className="text-[8.5pt] font-sans italic text-[#4A4845] mb-1.5 leading-relaxed">
                       {exp.description}
                     </p>
                   )}
@@ -106,7 +111,7 @@ export const ConsultingTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
           </section>
         )}
 
-        <div className="absolute bottom-4 right-8 text-[8pt] font-serif text-[#807D7A]">
+        <div className="absolute bottom-4 right-8 text-[8pt] font-serif text-[#807D7A] select-none">
           Page 1 of 2
         </div>
       </div>
@@ -133,19 +138,17 @@ export const ConsultingTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
         {/* Education */}
         {education.length > 0 && (
           <section className="mb-4">
-            <div className="text-[10pt] font-bold uppercase tracking-[0.1em] text-[#0A0A0A] pb-0.5 mb-2 border-b border-[#8C8172]">
-              Education &amp; Credentials
-            </div>
+            <ConsultingSectionHeader title="Education & Credentials" />
             <div className="space-y-2">
               {education.map(edu => (
                 <div key={edu.id}>
-                  <div className="flex justify-between items-baseline">
+                  <div className="flex justify-between items-baseline leading-tight">
                     <span className="font-bold text-[10pt] text-[#0A0A0A] font-serif">{edu.school}</span>
                     <span className="text-[8.5pt] font-sans text-[#4A4845]">
                       {edu.startDate} – {edu.endDate}
                     </span>
                   </div>
-                  <div className="flex justify-between text-[9pt] font-sans text-[#333]">
+                  <div className="flex justify-between text-[9pt] font-sans text-[#333] mt-0.5">
                     <span>{edu.degree}, {edu.field}</span>
                     <span className="text-[#807D7A]">{edu.location}</span>
                   </div>
@@ -161,13 +164,11 @@ export const ConsultingTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
         {/* Core Competencies & Advisory Domains */}
         {skills.length > 0 && (
           <section className="mb-4">
-            <div className="text-[10pt] font-bold uppercase tracking-[0.1em] text-[#0A0A0A] pb-0.5 mb-1.5 border-b border-[#8C8172]">
-              Advisory Domains &amp; Functional Expertise
-            </div>
-            <div className="space-y-1 font-sans text-[8.5pt]">
+            <ConsultingSectionHeader title="Advisory Domains & Functional Expertise" />
+            <div className="space-y-1.5 font-sans text-[8.5pt]">
               {skills.map(sk => (
                 <div key={sk.id} className="flex items-baseline gap-1.5">
-                  <span className="font-semibold text-[#0A0A0A]">{sk.category}:</span>
+                  <span className="font-semibold text-[#0A0A0A] shrink-0">{sk.category}:</span>
                   <span className="text-[#333]">{sk.items.join('  •  ')}</span>
                 </div>
               ))}
@@ -178,18 +179,16 @@ export const ConsultingTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
         {/* Featured Engagement Cases */}
         {projects.length > 0 && (
           <section className="mb-4">
-            <div className="text-[10pt] font-bold uppercase tracking-[0.1em] text-[#0A0A0A] pb-0.5 mb-1.5 border-b border-[#8C8172]">
-              Featured Engagement Cases &amp; Initiatives
-            </div>
+            <ConsultingSectionHeader title="Featured Engagement Cases & Initiatives" />
             <div className="space-y-2.5">
               {projects.map(proj => (
                 <div key={proj.id} className="text-[8.5pt] font-sans">
-                  <div className="flex justify-between font-bold text-[#0A0A0A]">
+                  <div className="flex justify-between font-bold text-[#0A0A0A] leading-tight">
                     <span>{proj.title}</span>
                     <span className="text-[#807D7A] font-normal">{proj.startDate} – {proj.endDate}</span>
                   </div>
-                  <div className="text-[#8C8172] text-[8pt] italic">{proj.role}</div>
-                  <p className="text-[#333] mt-0.5">{proj.description}</p>
+                  <div className="text-[#8C8172] text-[8pt] italic mt-0.5 mb-1">{proj.role}</div>
+                  <p className="text-[#333] leading-relaxed">{proj.description}</p>
                 </div>
               ))}
             </div>
@@ -206,7 +205,7 @@ export const ConsultingTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
           </div>
         )}
 
-        <div className="absolute bottom-4 right-8 text-[8pt] font-serif text-[#807D7A]">
+        <div className="absolute bottom-4 right-8 text-[8pt] font-serif text-[#807D7A] select-none">
           Page 2 of 2
         </div>
       </div>

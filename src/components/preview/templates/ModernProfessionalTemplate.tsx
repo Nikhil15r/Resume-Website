@@ -1,6 +1,15 @@
 import React from 'react';
 import { CVDocument } from '../../../types/cv';
 
+const ModernSectionHeader: React.FC<{ title: string; className?: string }> = ({ title, className = 'mb-2.5' }) => (
+  <div className={className}>
+    <h2 className="text-[9pt] font-semibold uppercase tracking-[0.14em] text-[#8C8172] leading-none select-none">
+      {title}
+    </h2>
+    <div className="w-full h-[0.75pt] bg-[#E5E3DF] mt-1" />
+  </div>
+);
+
 export const ModernProfessionalTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
   const { personalInfo, summary, experience, education, skills, projects, certifications, publications, settings } = doc;
 
@@ -22,7 +31,7 @@ export const ModernProfessionalTemplate: React.FC<{ doc: CVDocument }> = ({ doc 
         }}
       >
         {/* Modern Header */}
-        <header className="pb-4 mb-4 border-b border-[#E5E3DF]">
+        <header className="pb-3.5 mb-4 border-b border-[#E5E3DF]">
           <div className="flex justify-between items-end gap-3">
             <div>
               <h1 className="text-[26pt] font-semibold tracking-[-0.03em] text-[#0A0A0A] leading-none mb-1.5">
@@ -55,6 +64,7 @@ export const ModernProfessionalTemplate: React.FC<{ doc: CVDocument }> = ({ doc 
         {/* Summary */}
         {summary && (
           <section className="mb-4">
+            <ModernSectionHeader title="Professional Summary" />
             <p className="text-[9.2pt] text-[#4A4845] leading-[1.55]">
               {summary}
             </p>
@@ -64,13 +74,11 @@ export const ModernProfessionalTemplate: React.FC<{ doc: CVDocument }> = ({ doc 
         {/* Experience */}
         {experience.length > 0 && (
           <section className="mb-2">
-            <h2 className="text-[9pt] font-semibold uppercase tracking-[0.14em] text-[#8C8172] mb-3">
-              Professional Experience
-            </h2>
+            <ModernSectionHeader title="Professional Experience" />
             <div className="space-y-3.5">
               {experience.map(exp => (
                 <div key={exp.id} className="relative pl-3 border-l-2 border-[#E5E3DF]">
-                  <div className="flex justify-between items-baseline mb-0.5">
+                  <div className="flex justify-between items-baseline mb-0.5 leading-tight">
                     <h3 className="font-semibold text-[10pt] text-[#0A0A0A]">{exp.role}</h3>
                     <span className="text-[8.5pt] text-[#807D7A] font-medium">
                       {exp.startDate} — {exp.current ? 'Present' : exp.endDate}
@@ -80,7 +88,7 @@ export const ModernProfessionalTemplate: React.FC<{ doc: CVDocument }> = ({ doc 
                     {exp.company} <span className="text-[#D1CECA] font-normal">•</span> <span className="text-[#807D7A] font-normal">{exp.location}</span>
                   </div>
                   {exp.description && (
-                    <p className="text-[8.5pt] text-[#4A4845] mb-1">
+                    <p className="text-[8.5pt] text-[#4A4845] mb-1 leading-relaxed">
                       {exp.description}
                     </p>
                   )}
@@ -100,7 +108,7 @@ export const ModernProfessionalTemplate: React.FC<{ doc: CVDocument }> = ({ doc 
           </section>
         )}
 
-        <div className="absolute bottom-4 right-8 text-[8pt] text-[#807D7A]">
+        <div className="absolute bottom-4 right-8 text-[8pt] text-[#807D7A] select-none">
           Page 1 of 2
         </div>
       </div>
@@ -117,23 +125,21 @@ export const ModernProfessionalTemplate: React.FC<{ doc: CVDocument }> = ({ doc 
         }}
       >
         {/* Running Header */}
-        <div className="flex justify-between items-baseline pb-2.5 mb-4 border-b border-[#E5E3DF] text-[8.5pt] text-[#807D7A]">
+        <div className="flex justify-between items-baseline pb-2 mb-4 border-b border-[#E5E3DF] text-[8.5pt] text-[#807D7A]">
           <span className="font-semibold text-[#0A0A0A] tracking-tight">{personalInfo.fullName}</span>
           <span className="text-[#8C8172]">{personalInfo.title}</span>
         </div>
 
         {/* Education & Skills */}
-        <div className="grid grid-cols-2 gap-5 mb-5">
+        <div className="grid grid-cols-2 gap-5 mb-4">
           {education.length > 0 && (
             <section>
-              <h2 className="text-[9pt] font-semibold uppercase tracking-[0.14em] text-[#8C8172] mb-2.5">
-                Education
-              </h2>
+              <ModernSectionHeader title="Education" />
               <div className="space-y-3">
                 {education.map(edu => (
                   <div key={edu.id}>
-                    <div className="font-semibold text-[9.5pt] text-[#0A0A0A]">{edu.school}</div>
-                    <div className="text-[8.8pt] text-[#4A4845]">{edu.degree}, {edu.field}</div>
+                    <div className="font-semibold text-[9.5pt] text-[#0A0A0A] leading-tight">{edu.school}</div>
+                    <div className="text-[8.8pt] text-[#4A4845] mt-0.5">{edu.degree}, {edu.field}</div>
                     <div className="flex justify-between text-[8pt] text-[#807D7A] mt-0.5">
                       <span>{edu.location}</span>
                       <span>{edu.startDate} – {edu.endDate}</span>
@@ -149,9 +155,7 @@ export const ModernProfessionalTemplate: React.FC<{ doc: CVDocument }> = ({ doc 
 
           {skills.length > 0 && (
             <section>
-              <h2 className="text-[9pt] font-semibold uppercase tracking-[0.14em] text-[#8C8172] mb-2.5">
-                Core Capabilities
-              </h2>
+              <ModernSectionHeader title="Core Capabilities" />
               <div className="space-y-2.5">
                 {skills.map(sk => (
                   <div key={sk.id}>
@@ -172,14 +176,12 @@ export const ModernProfessionalTemplate: React.FC<{ doc: CVDocument }> = ({ doc 
 
         {/* Projects */}
         {projects.length > 0 && (
-          <section className="mb-5">
-            <h2 className="text-[9pt] font-semibold uppercase tracking-[0.14em] text-[#8C8172] mb-2.5">
-              Key Strategic Initiatives
-            </h2>
+          <section className="mb-4">
+            <ModernSectionHeader title="Key Strategic Initiatives" />
             <div className="space-y-3">
               {projects.map(proj => (
                 <div key={proj.id} className="p-2.5 bg-[#FAFAF8] rounded border border-[#E5E3DF]">
-                  <div className="flex justify-between items-baseline mb-0.5">
+                  <div className="flex justify-between items-baseline mb-0.5 leading-tight">
                     <h3 className="font-semibold text-[9.5pt] text-[#0A0A0A]">{proj.title}</h3>
                     <span className="text-[8pt] text-[#807D7A]">{proj.startDate} – {proj.endDate}</span>
                   </div>
@@ -219,7 +221,7 @@ export const ModernProfessionalTemplate: React.FC<{ doc: CVDocument }> = ({ doc 
           </section>
         )}
 
-        <div className="absolute bottom-4 right-8 text-[8pt] text-[#807D7A]">
+        <div className="absolute bottom-4 right-8 text-[8pt] text-[#807D7A] select-none">
           Page 2 of 2
         </div>
       </div>

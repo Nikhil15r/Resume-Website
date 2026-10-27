@@ -1,6 +1,15 @@
 import React from 'react';
 import { CVDocument } from '../../../types/cv';
 
+const AcademicSectionHeader: React.FC<{ title: string; className?: string }> = ({ title, className = 'mb-2.5' }) => (
+  <div className={className}>
+    <h2 className="text-[10pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] leading-none select-none">
+      {title}
+    </h2>
+    <div className="w-full h-[0.75pt] bg-[#0A0A0A] mt-1" />
+  </div>
+);
+
 export const AcademicCVTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
   const { personalInfo, summary, experience, education, publications, awards, skills, projects, settings } = doc;
 
@@ -30,10 +39,10 @@ export const AcademicCVTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
       >
         {/* Academic Header */}
         <header className="text-center pb-3.5 mb-4 border-b border-[#0A0A0A]">
-          <h1 className="text-[23pt] font-normal tracking-[0.04em] uppercase text-[#0A0A0A] mb-1">
+          <h1 className="text-[23pt] font-normal tracking-[0.04em] uppercase text-[#0A0A0A] leading-none mb-1">
             {personalInfo.fullName}
           </h1>
-          <p className="text-[11pt] italic text-[#4A4845] mb-2">
+          <p className="text-[11pt] italic text-[#4A4845] mt-1 mb-2">
             {personalInfo.title}
           </p>
           <div className="flex flex-wrap justify-center items-center gap-y-1 text-[8.5pt] text-[#4A4845]">
@@ -55,9 +64,7 @@ export const AcademicCVTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
         {/* Research Statement */}
         {summary && (
           <section className="mb-4">
-            <h2 className="text-[10.5pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] pb-0.5 mb-1.5 border-b border-[#0A0A0A]">
-              Research Focus &amp; Scholarly Profile
-            </h2>
+            <AcademicSectionHeader title="Research Focus & Scholarly Profile" />
             <p className="text-[9.2pt] text-[#2A2927] leading-[1.6] text-justify">
               {summary}
             </p>
@@ -67,17 +74,15 @@ export const AcademicCVTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
         {/* Education */}
         {education.length > 0 && (
           <section className="mb-4">
-            <h2 className="text-[10.5pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] pb-0.5 mb-2 border-b border-[#0A0A0A]">
-              Education
-            </h2>
+            <AcademicSectionHeader title="Education" />
             <div className="space-y-2.5">
               {education.map(edu => (
-                <div key={edu.id} className="grid grid-cols-[80px_1fr] items-baseline">
+                <div key={edu.id} className="grid grid-cols-[80px_1fr] items-baseline leading-tight">
                   <span className="text-[8.5pt] text-[#666]">{edu.endDate}</span>
                   <div>
                     <div className="font-semibold text-[#0A0A0A]">{edu.degree}, {edu.field}</div>
-                    <div className="italic text-[#444] text-[9pt]">{edu.school}, {edu.location}</div>
-                    {edu.honors && <div className="text-[8pt] text-[#666] mt-0.5">{edu.honors}</div>}
+                    <div className="italic text-[#444] text-[9pt] mt-0.5">{edu.school}, {edu.location}</div>
+                    {edu.honors && <div className="text-[8pt] text-[#666] mt-0.5">• {edu.honors}</div>}
                   </div>
                 </div>
               ))}
@@ -88,9 +93,7 @@ export const AcademicCVTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
         {/* Appointments & Experience */}
         {experience.length > 0 && (
           <section className="mb-2">
-            <h2 className="text-[10.5pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] pb-0.5 mb-2 border-b border-[#0A0A0A]">
-              Appointments &amp; Professional Experience
-            </h2>
+            <AcademicSectionHeader title="Appointments & Professional Experience" />
             <div className="space-y-3">
               {experience.map(exp => (
                 <div key={exp.id} className="grid grid-cols-[90px_1fr] items-baseline">
@@ -98,9 +101,9 @@ export const AcademicCVTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
                     {exp.startDate} – {exp.current ? 'Present' : exp.endDate}
                   </span>
                   <div>
-                    <div className="font-semibold text-[#0A0A0A]">{exp.role}</div>
-                    <div className="italic text-[#444] text-[8.8pt] mb-1">{exp.company}, {exp.location}</div>
-                    {exp.description && <p className="text-[8.5pt] text-[#333] mb-1">{exp.description}</p>}
+                    <div className="font-semibold text-[#0A0A0A] leading-tight">{exp.role}</div>
+                    <div className="italic text-[#444] text-[8.8pt] mt-0.5 mb-1">{exp.company}, {exp.location}</div>
+                    {exp.description && <p className="text-[8.5pt] text-[#333] mb-1 leading-relaxed">{exp.description}</p>}
                     {exp.achievements.length > 0 && (
                       <div className="space-y-0.5 text-[8.2pt] text-[#333] ml-0.5">
                         {exp.achievements.map((a, i) => (
@@ -118,7 +121,7 @@ export const AcademicCVTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
           </section>
         )}
 
-        <div className="absolute bottom-4 right-8 text-[8pt] font-serif text-[#807D7A]">
+        <div className="absolute bottom-4 right-8 text-[8pt] font-serif text-[#807D7A] select-none">
           Page 1 of 2
         </div>
       </div>
@@ -145,14 +148,12 @@ export const AcademicCVTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
         {/* Peer-Reviewed Publications */}
         {publications.length > 0 && (
           <section className="mb-4">
-            <h2 className="text-[10.5pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] pb-0.5 mb-2 border-b border-[#0A0A0A]">
-              Peer-Reviewed Publications &amp; Proceedings
-            </h2>
+            <AcademicSectionHeader title="Peer-Reviewed Publications & Proceedings" />
             <div className="space-y-2 text-[8.8pt] text-[#222]">
               {publications.map((pub, idx) => (
                 <div key={pub.id} className="flex items-start gap-2">
                   <span className="w-4 shrink-0 text-right font-mono text-[8pt] text-[#666]">[{idx + 1}]</span>
-                  <div className="flex-1">
+                  <div className="flex-1 leading-snug">
                     <span>{pub.authors} ({pub.date}). &ldquo;{pub.title}&rdquo;. </span>
                     <span className="italic">{pub.publisher}</span>.
                   </div>
@@ -165,9 +166,7 @@ export const AcademicCVTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
         {/* Grants, Fellowships & Honors */}
         {awards.length > 0 && (
           <section className="mb-4">
-            <h2 className="text-[10.5pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] pb-0.5 mb-1.5 border-b border-[#0A0A0A]">
-              Grants, Fellowships &amp; Honors
-            </h2>
+            <AcademicSectionHeader title="Grants, Fellowships & Honors" />
             <div className="space-y-1.5 text-[8.8pt]">
               {awards.map(aw => (
                 <div key={aw.id} className="grid grid-cols-[60px_1fr] items-baseline">
@@ -185,16 +184,14 @@ export const AcademicCVTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
         {/* Selected Research Projects */}
         {projects.length > 0 && (
           <section className="mb-4">
-            <h2 className="text-[10.5pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] pb-0.5 mb-1.5 border-b border-[#0A0A0A]">
-              Research Initiatives &amp; Distributed Protocols
-            </h2>
+            <AcademicSectionHeader title="Research Initiatives & Distributed Protocols" />
             <div className="space-y-2 text-[8.5pt]">
               {projects.map(p => (
                 <div key={p.id}>
                   <div className="font-semibold text-[#0A0A0A]">
                     {p.title} <span className="font-normal italic text-[#666]">({p.startDate} – {p.endDate})</span>
                   </div>
-                  <p className="text-[#333]">{p.description}</p>
+                  <p className="text-[#333] leading-relaxed">{p.description}</p>
                 </div>
               ))}
             </div>
@@ -211,7 +208,7 @@ export const AcademicCVTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
           </section>
         )}
 
-        <div className="absolute bottom-4 right-8 text-[8pt] font-serif text-[#807D7A]">
+        <div className="absolute bottom-4 right-8 text-[8pt] font-serif text-[#807D7A] select-none">
           Page 2 of 2
         </div>
       </div>
