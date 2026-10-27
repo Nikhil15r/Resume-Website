@@ -2,158 +2,219 @@ import React from 'react';
 import { CVDocument } from '../../../types/cv';
 
 export const AcademicCVTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
-  const { personalInfo, summary, experience, education, publications, awards, skills, projects } = doc;
+  const { personalInfo, summary, experience, education, publications, awards, skills, projects, settings } = doc;
+
+  const isA4 = settings.paperSize === 'a4';
+  const widthMm = isA4 ? 210 : 215.9;
+  const heightMm = isA4 ? 297 : 279.4;
+
+  const contactItems = [
+    personalInfo.location,
+    personalInfo.email,
+    personalInfo.phone,
+    personalInfo.website
+  ].filter(Boolean);
 
   return (
-    <div className="text-[#0A0A0A] font-serif text-[10.5pt] leading-[1.5] p-[44pt] bg-white min-h-full">
-      {/* Academic Header */}
-      <header className="text-center pb-4 mb-5 border-b border-[#0A0A0A]">
-        <h1 className="text-[23pt] font-normal tracking-[0.04em] uppercase text-[#0A0A0A] mb-1">
-          {personalInfo.fullName}
-        </h1>
-        <p className="text-[11pt] italic text-[#4A4845] mb-2">
-          {personalInfo.title}
-        </p>
-        <div className="text-[9pt] text-[#4A4845] space-y-0.5">
-          <div>{personalInfo.location}</div>
-          <div className="flex justify-center items-center gap-2">
-            <a href={`mailto:${personalInfo.email}`} className="text-[#0A0A0A] underline">{personalInfo.email}</a>
-            <span>•</span>
-            <span>{personalInfo.phone}</span>
-            {personalInfo.website && (
-              <>
-                <span>•</span>
-                <span>{personalInfo.website}</span>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* Research Statement / Overview */}
-      {summary && (
-        <section className="mb-4">
-          <h2 className="text-[11pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] pb-0.5 mb-1.5 border-b border-[#0A0A0A]">
-            Research Focus
-          </h2>
-          <p className="text-[9.5pt] text-[#2A2927] leading-[1.6] text-justify">
-            {summary}
+    <div className="flex flex-col gap-8 items-center w-full">
+      {/* -------------------- PAGE 1 -------------------- */}
+      <div
+        id="cv-page-1"
+        className="cv-page-sheet relative bg-white text-[#0A0A0A] font-serif text-[10pt] leading-[1.5] p-[42pt] border border-[#E5E3DF] shadow-paper hover:shadow-paper-lg transition-shadow text-left"
+        style={{
+          width: `${widthMm}mm`,
+          height: `${heightMm}mm`,
+          boxSizing: 'border-box',
+          overflow: 'hidden'
+        }}
+      >
+        {/* Academic Header */}
+        <header className="text-center pb-3.5 mb-4 border-b border-[#0A0A0A]">
+          <h1 className="text-[23pt] font-normal tracking-[0.04em] uppercase text-[#0A0A0A] mb-1">
+            {personalInfo.fullName}
+          </h1>
+          <p className="text-[11pt] italic text-[#4A4845] mb-2">
+            {personalInfo.title}
           </p>
-        </section>
-      )}
+          <div className="flex flex-wrap justify-center items-center gap-y-1 text-[8.5pt] text-[#4A4845]">
+            {contactItems.map((item, idx) => (
+              <React.Fragment key={idx}>
+                {idx > 0 && <span className="mx-2 text-[#807D7A] select-none">•</span>}
+                {item?.includes('@') ? (
+                  <a href={`mailto:${item}`} className="text-[#0A0A0A] underline">
+                    {item}
+                  </a>
+                ) : (
+                  <span>{item}</span>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        </header>
 
-      {/* Education */}
-      {education.length > 0 && (
-        <section className="mb-4">
-          <h2 className="text-[11pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] pb-0.5 mb-2 border-b border-[#0A0A0A]">
-            Education
-          </h2>
-          <div className="space-y-2.5">
-            {education.map(edu => (
-              <div key={edu.id} className="grid grid-cols-[80px_1fr] items-baseline">
-                <span className="text-[9pt] text-[#666]">{edu.endDate}</span>
-                <div>
-                  <div className="font-semibold text-[#0A0A0A]">{edu.degree}, {edu.field}</div>
-                  <div className="italic text-[#444] text-[9.5pt]">{edu.school}, {edu.location}</div>
-                  {edu.honors && <div className="text-[8.5pt] text-[#666] mt-0.5">{edu.honors}</div>}
+        {/* Research Statement */}
+        {summary && (
+          <section className="mb-4">
+            <h2 className="text-[10.5pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] pb-0.5 mb-1.5 border-b border-[#0A0A0A]">
+              Research Focus &amp; Scholarly Profile
+            </h2>
+            <p className="text-[9.2pt] text-[#2A2927] leading-[1.6] text-justify">
+              {summary}
+            </p>
+          </section>
+        )}
+
+        {/* Education */}
+        {education.length > 0 && (
+          <section className="mb-4">
+            <h2 className="text-[10.5pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] pb-0.5 mb-2 border-b border-[#0A0A0A]">
+              Education
+            </h2>
+            <div className="space-y-2.5">
+              {education.map(edu => (
+                <div key={edu.id} className="grid grid-cols-[80px_1fr] items-baseline">
+                  <span className="text-[8.5pt] text-[#666]">{edu.endDate}</span>
+                  <div>
+                    <div className="font-semibold text-[#0A0A0A]">{edu.degree}, {edu.field}</div>
+                    <div className="italic text-[#444] text-[9pt]">{edu.school}, {edu.location}</div>
+                    {edu.honors && <div className="text-[8pt] text-[#666] mt-0.5">{edu.honors}</div>}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+              ))}
+            </div>
+          </section>
+        )}
 
-      {/* Academic Appointments & Industry Experience */}
-      {experience.length > 0 && (
-        <section className="mb-4">
-          <h2 className="text-[11pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] pb-0.5 mb-2 border-b border-[#0A0A0A]">
-            Appointments &amp; Professional Experience
-          </h2>
-          <div className="space-y-3">
-            {experience.map(exp => (
-              <div key={exp.id} className="grid grid-cols-[100px_1fr] items-baseline">
-                <span className="text-[8.5pt] text-[#666]">
-                  {exp.startDate} – {exp.current ? 'Present' : exp.endDate}
-                </span>
-                <div>
-                  <div className="font-semibold text-[#0A0A0A]">{exp.role}</div>
-                  <div className="italic text-[#444] text-[9pt] mb-1">{exp.company}, {exp.location}</div>
-                  {exp.description && <p className="text-[8.5pt] text-[#333] mb-1">{exp.description}</p>}
-                  {exp.achievements.length > 0 && (
-                    <ul className="list-disc list-outside ml-3.5 space-y-0.5 text-[8.5pt] text-[#333]">
-                      {exp.achievements.map((a, i) => <li key={i}>{a}</li>)}
-                    </ul>
-                  )}
+        {/* Appointments & Experience */}
+        {experience.length > 0 && (
+          <section className="mb-2">
+            <h2 className="text-[10.5pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] pb-0.5 mb-2 border-b border-[#0A0A0A]">
+              Appointments &amp; Professional Experience
+            </h2>
+            <div className="space-y-3">
+              {experience.map(exp => (
+                <div key={exp.id} className="grid grid-cols-[90px_1fr] items-baseline">
+                  <span className="text-[8pt] text-[#666]">
+                    {exp.startDate} – {exp.current ? 'Present' : exp.endDate}
+                  </span>
+                  <div>
+                    <div className="font-semibold text-[#0A0A0A]">{exp.role}</div>
+                    <div className="italic text-[#444] text-[8.8pt] mb-1">{exp.company}, {exp.location}</div>
+                    {exp.description && <p className="text-[8.5pt] text-[#333] mb-1">{exp.description}</p>}
+                    {exp.achievements.length > 0 && (
+                      <div className="space-y-0.5 text-[8.2pt] text-[#333] ml-0.5">
+                        {exp.achievements.map((a, i) => (
+                          <div key={i} className="flex items-start gap-2">
+                            <span className="w-2 shrink-0 text-center select-none text-[#0A0A0A]">•</span>
+                            <span className="flex-1">{a}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+              ))}
+            </div>
+          </section>
+        )}
 
-      {/* Peer-Reviewed Publications */}
-      {publications.length > 0 && (
-        <section className="mb-4">
-          <h2 className="text-[11pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] pb-0.5 mb-2 border-b border-[#0A0A0A]">
-            Peer-Reviewed Publications
-          </h2>
-          <ol className="list-decimal list-outside ml-4 space-y-2 text-[9pt] text-[#222]">
-            {publications.map(pub => (
-              <li key={pub.id} className="pl-1">
-                <span>{pub.authors} ({pub.date}). &ldquo;{pub.title}&rdquo;. </span>
-                <span className="italic">{pub.publisher}</span>.
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
+        <div className="absolute bottom-4 right-8 text-[8pt] font-serif text-[#807D7A]">
+          Page 1 of 2
+        </div>
+      </div>
 
-      {/* Grants & Honors */}
-      {awards.length > 0 && (
-        <section className="mb-4">
-          <h2 className="text-[11pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] pb-0.5 mb-1.5 border-b border-[#0A0A0A]">
-            Grants, Fellowships &amp; Honors
-          </h2>
-          <div className="space-y-1.5 text-[9pt]">
-            {awards.map(aw => (
-              <div key={aw.id} className="grid grid-cols-[60px_1fr] items-baseline">
-                <span className="text-[8.5pt] text-[#666]">{aw.date}</span>
-                <div>
-                  <span className="font-semibold text-[#0A0A0A]">{aw.title}</span>, {aw.organization}
-                  {aw.summary && <div className="text-[8.5pt] text-[#555]">{aw.summary}</div>}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Selected Technical & Research Projects */}
-      {projects.length > 0 && (
-        <section className="mb-3">
-          <h2 className="text-[11pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] pb-0.5 mb-1.5 border-b border-[#0A0A0A]">
-            Research Projects &amp; Systems Architecture
-          </h2>
-          <div className="space-y-2 text-[8.5pt]">
-            {projects.map(p => (
-              <div key={p.id}>
-                <div className="font-semibold text-[#0A0A0A]">{p.title} ({p.startDate} – {p.endDate})</div>
-                <p className="text-[#333]">{p.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Scholarly Fields */}
-      {skills.length > 0 && (
-        <section className="pt-2 border-t border-[#E5E3DF] text-[8.5pt]">
-          <span className="font-semibold text-[#0A0A0A]">Fields of Specialization: </span>
-          <span className="text-[#444]">
-            {skills.map(s => s.items.join(', ')).join(' • ')}
+      {/* -------------------- PAGE 2 -------------------- */}
+      <div
+        id="cv-page-2"
+        className="cv-page-sheet relative bg-white text-[#0A0A0A] font-serif text-[10pt] leading-[1.5] p-[42pt] border border-[#E5E3DF] shadow-paper hover:shadow-paper-lg transition-shadow text-left"
+        style={{
+          width: `${widthMm}mm`,
+          height: `${heightMm}mm`,
+          boxSizing: 'border-box',
+          overflow: 'hidden'
+        }}
+      >
+        {/* Running Header */}
+        <div className="flex justify-between items-baseline pb-2 mb-4 border-b border-[#0A0A0A] text-[9pt] font-sans text-[#666]">
+          <span className="font-serif font-semibold text-[#0A0A0A] uppercase tracking-wider">
+            {personalInfo.fullName}
           </span>
-        </section>
-      )}
+          <span className="italic font-serif">{personalInfo.title}</span>
+        </div>
+
+        {/* Peer-Reviewed Publications */}
+        {publications.length > 0 && (
+          <section className="mb-4">
+            <h2 className="text-[10.5pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] pb-0.5 mb-2 border-b border-[#0A0A0A]">
+              Peer-Reviewed Publications &amp; Proceedings
+            </h2>
+            <div className="space-y-2 text-[8.8pt] text-[#222]">
+              {publications.map((pub, idx) => (
+                <div key={pub.id} className="flex items-start gap-2">
+                  <span className="w-4 shrink-0 text-right font-mono text-[8pt] text-[#666]">[{idx + 1}]</span>
+                  <div className="flex-1">
+                    <span>{pub.authors} ({pub.date}). &ldquo;{pub.title}&rdquo;. </span>
+                    <span className="italic">{pub.publisher}</span>.
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Grants, Fellowships & Honors */}
+        {awards.length > 0 && (
+          <section className="mb-4">
+            <h2 className="text-[10.5pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] pb-0.5 mb-1.5 border-b border-[#0A0A0A]">
+              Grants, Fellowships &amp; Honors
+            </h2>
+            <div className="space-y-1.5 text-[8.8pt]">
+              {awards.map(aw => (
+                <div key={aw.id} className="grid grid-cols-[60px_1fr] items-baseline">
+                  <span className="text-[8pt] text-[#666]">{aw.date}</span>
+                  <div>
+                    <span className="font-semibold text-[#0A0A0A]">{aw.title}</span>, {aw.organization}
+                    {aw.summary && <div className="text-[8pt] text-[#555]">{aw.summary}</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Selected Research Projects */}
+        {projects.length > 0 && (
+          <section className="mb-4">
+            <h2 className="text-[10.5pt] font-semibold tracking-[0.06em] uppercase text-[#0A0A0A] pb-0.5 mb-1.5 border-b border-[#0A0A0A]">
+              Research Initiatives &amp; Distributed Protocols
+            </h2>
+            <div className="space-y-2 text-[8.5pt]">
+              {projects.map(p => (
+                <div key={p.id}>
+                  <div className="font-semibold text-[#0A0A0A]">
+                    {p.title} <span className="font-normal italic text-[#666]">({p.startDate} – {p.endDate})</span>
+                  </div>
+                  <p className="text-[#333]">{p.description}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Fields of Specialization */}
+        {skills.length > 0 && (
+          <section className="pt-2 border-t border-[#E5E3DF] text-[8.5pt]">
+            <span className="font-semibold text-[#0A0A0A]">Fields of Specialization: </span>
+            <span className="text-[#444]">
+              {skills.map(s => s.items.join(', ')).join(' • ')}
+            </span>
+          </section>
+        )}
+
+        <div className="absolute bottom-4 right-8 text-[8pt] font-serif text-[#807D7A]">
+          Page 2 of 2
+        </div>
+      </div>
     </div>
   );
 };

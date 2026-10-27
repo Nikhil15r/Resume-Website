@@ -12,8 +12,8 @@ export async function downloadPdfDirect(
   doc: CVDocument,
   elementId = 'cv-printable-document'
 ): Promise<void> {
-  const element = document.getElementById(elementId);
-  if (!element) {
+  const container = document.getElementById(elementId);
+  if (!container) {
     // Fallback if DOM element is not rendered
     window.print();
     return;
@@ -23,28 +23,12 @@ export async function downloadPdfDirect(
   const pageWidth = isA4 ? 210 : 215.9; // mm
   const pageHeight = isA4 ? 297 : 279.4; // mm
 
-  try {
-    const canvas = await html2canvas(element, {
-      scale: 2, // 2x high-resolution capture for crisp typography
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#FFFFFF',
-      logging: false,
-      windowWidth: 1200,
-      onclone: (clonedDoc) => {
-        const clonedEl = clonedDoc.getElementById(elementId);
-        if (clonedEl) {
-          // Remove parent transforms so capture is unwarped at 1:1 scale
-          let parent: HTMLElement | null = clonedEl.parentElement;
-          while (parent && parent !== clonedDoc.body) {
-            parent.style.transform = 'none';
-            parent = parent.parentElement;
-          }
-        }
-      }
-    });
+  const pageElements = container.querySelectorAll<HTMLElement>('.cv-page-sheet');
+  const sheetsToProcess: HTMLElement[] = pageElements.length > 0
+    ? Array.from(pageElements)
+    : [container];
 
-    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+  try {
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
@@ -52,24 +36,35 @@ export async function downloadPdfDirect(
       compress: true
     });
 
-    const imgWidth = pageWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    for (let i = 0; i < sheetsToProcess.length; i++) {
+      const sheet = sheetsToProcess[i];
+      if (i > 0) {
+        pdf.addPage();
+      }
 
-    let heightLeft = imgHeight;
-    let position = 0;
+      const canvas = await html2canvas(sheet, {
+        scale: 2, // 2x high-resolution capture for crisp typography
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#FFFFFF',
+        logging: false,
+        windowWidth: 1200,
+        onclone: (clonedDoc) => {
+          // Remove parent transforms so capture is unwarped at 1:1 scale
+          const clonedSheets = clonedDoc.querySelectorAll<HTMLElement>('.cv-page-sheet');
+          const targetClonedSheet = clonedSheets[i] || clonedDoc.getElementById(elementId);
+          if (targetClonedSheet) {
+            let parent: HTMLElement | null = targetClonedSheet.parentElement;
+            while (parent && parent !== clonedDoc.body) {
+              parent.style.transform = 'none';
+              parent = parent.parentElement;
+            }
+          }
+        }
+      });
 
-    // Page 1
-    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
-    heightLeft -= pageHeight;
-
-    // Additional pages if document spans multiple pages
-    let pageIndex = 1;
-    while (heightLeft > 8) {
-      pdf.addPage();
-      position = -(pageIndex * pageHeight);
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
-      heightLeft -= pageHeight;
-      pageIndex++;
+      const imgData = canvas.toDataURL('image/jpeg', 0.98);
+      pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
     }
 
     const filename = `${doc.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}.pdf`;

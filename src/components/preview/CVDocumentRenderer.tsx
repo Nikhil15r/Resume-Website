@@ -20,7 +20,7 @@ export const CVDocumentRenderer: React.FC<CVDocumentRendererProps> = ({
   className = '',
   showPageBorders = true
 }) => {
-  const { templateId, paperSize } = doc.settings;
+  const { templateId } = doc.settings;
 
   // Determine template component
   const renderTemplate = () => {
@@ -41,11 +41,6 @@ export const CVDocumentRenderer: React.FC<CVDocumentRendererProps> = ({
     }
   };
 
-  // Dimensions: A4 is 210mm × 297mm (~794px × 1123px at 96 DPI), US Letter is 8.5" × 11" (~816px × 1056px)
-  const isA4 = paperSize === 'a4';
-  const widthMm = isA4 ? 210 : 215.9; // 8.5in = 215.9mm
-  const heightMm = isA4 ? 297 : 279.4; // 11in = 279.4mm
-
   return (
     <div className={`flex flex-col items-center justify-start ${className}`}>
       {/* Scalable Container */}
@@ -57,24 +52,8 @@ export const CVDocumentRenderer: React.FC<CVDocumentRendererProps> = ({
         }}
         className="print:transform-none"
       >
-        {/* Document Sheet */}
-        <div
-          id="cv-printable-document"
-          className={`cv-document-sheet relative bg-white overflow-hidden text-left transition-shadow ${
-            showPageBorders ? 'shadow-paper hover:shadow-paper-lg border border-[#E5E3DF]' : ''
-          }`}
-          style={{
-            width: `${widthMm}mm`,
-            minHeight: `${heightMm}mm`,
-            boxSizing: 'border-box'
-          }}
-        >
-          {/* Watermark / Subtle corner branding for non-print visual fidelity */}
-          <div className="absolute top-2 right-3 text-[7pt] text-[#D1CECA] uppercase font-mono tracking-widest pointer-events-none select-none print:hidden">
-            ATELIER • {doc.settings.templateId.toUpperCase()} • {paperSize.toUpperCase()}
-          </div>
-
-          {/* Template Content */}
+        {/* Printable Document Root (contains NO watermarks or website names) */}
+        <div id="cv-printable-document" className="flex flex-col items-center">
           {renderTemplate()}
         </div>
       </div>

@@ -62,13 +62,15 @@
     display: block !important;
   }
 
-  .cv-document-sheet {
+  .cv-document-sheet,
+  .cv-page-sheet {
     box-shadow: none !important;
+    border: none !important;
     margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
-    max-width: none !important;
-    page-break-after: always;
+    width: 210mm !important;
+    height: 297mm !important;
+    page-break-after: always !important;
+    break-after: page !important;
   }
 
   @page {
