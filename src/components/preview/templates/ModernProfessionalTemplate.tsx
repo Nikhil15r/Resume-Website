@@ -2,11 +2,10 @@ import React from 'react';
 import { CVDocument } from '../../../types/cv';
 
 const ModernSectionHeader: React.FC<{ title: string; className?: string }> = ({ title, className = 'mb-2.5' }) => (
-  <div className={className}>
-    <h2 className="text-[9pt] font-semibold uppercase tracking-[0.14em] text-[#8C8172] leading-none select-none">
+  <div className={`pb-1 border-b border-[#E5E3DF] ${className}`}>
+    <h2 className="text-[9pt] font-semibold uppercase tracking-[0.14em] text-[#8C8172] leading-normal select-none">
       {title}
     </h2>
-    <div className="w-full h-[0.75pt] bg-[#E5E3DF] mt-1" />
   </div>
 );
 

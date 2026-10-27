@@ -1,12 +1,14 @@
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { jsPDF } from 'jspdf';
+import { toPng } from 'html-to-image';
 import html2canvas from 'html2canvas';
 import { CVDocument, CoverLetterDocument } from '../types/cv';
 import { generateLatexSource } from './latexGenerator';
 
 /**
- * Directly renders and downloads the CV as a crisp, multi-page vector-quality PDF file
+ * Directly renders and downloads the CV as a crisp, multi-page vector-quality PDF file.
+ * Accurately replicates preview typography, line alignments, and exact dimensions.
  */
 export async function downloadPdfDirect(
   doc: CVDocument,
@@ -24,7 +26,7 @@ export async function downloadPdfDirect(
     try {
       await document.fonts.ready;
     } catch (e) {
-      console.warn('Document fonts ready error:', e);
+      console.warn('Document fonts ready check:', e);
     }
   }
 
@@ -36,6 +38,24 @@ export async function downloadPdfDirect(
   const sheetsToProcess: HTMLElement[] = pageElements.length > 0
     ? Array.from(pageElements)
     : [container];
+
+  // Find any parent transform wrapper (such as zoom scale in the editor preview)
+  let transformWrapper: HTMLElement | null = null;
+  let originalTransform = '';
+  let currentEl: HTMLElement | null = container;
+  while (currentEl && currentEl !== document.body) {
+    if (currentEl.style.transform && currentEl.style.transform !== 'none') {
+      transformWrapper = currentEl;
+      originalTransform = currentEl.style.transform;
+      break;
+    }
+    currentEl = currentEl.parentElement;
+  }
+
+  // Temporarily reset transform so sheets render and measure at natural 100% 1:1 scale
+  if (transformWrapper) {
+    transformWrapper.style.transform = 'none';
+  }
 
   try {
     const pdf = new jsPDF({
@@ -54,36 +74,43 @@ export async function downloadPdfDirect(
       const sheetWidth = sheet.offsetWidth;
       const sheetHeight = sheet.offsetHeight;
 
-      const canvas = await html2canvas(sheet, {
-        scale: 2, // 2x high-resolution capture for crisp typography
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#FFFFFF',
-        logging: false,
-        width: sheetWidth,
-        height: sheetHeight,
-        scrollX: 0,
-        scrollY: 0,
-        onclone: (clonedDoc) => {
-          // Remove parent transforms so capture is unwarped at 1:1 scale
-          const clonedSheets = clonedDoc.querySelectorAll<HTMLElement>('.cv-page-sheet');
-          const targetClonedSheet = clonedSheets[i] || clonedDoc.getElementById(elementId);
-          if (targetClonedSheet) {
-            let parent: HTMLElement | null = targetClonedSheet.parentElement;
-            while (parent && parent !== clonedDoc.body) {
-              parent.style.transform = 'none';
-              parent = parent.parentElement;
-            }
-            // Strip any browser preview border or shadow on the exported PDF sheet
-            targetClonedSheet.style.boxShadow = 'none';
-            targetClonedSheet.style.border = 'none';
-            targetClonedSheet.style.margin = '0';
-          }
-        }
-      });
+      // Temporarily strip screen-only paper styling (border and shadow) for clean document output
+      const origBorder = sheet.style.border;
+      const origShadow = sheet.style.boxShadow;
+      sheet.style.border = 'none';
+      sheet.style.boxShadow = 'none';
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.98);
-      pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
+      let imgData = '';
+      try {
+        // Preferred: html-to-image captures DOM via browser native SVG foreignObject rasterization
+        imgData = await toPng(sheet, {
+          pixelRatio: 2.5,
+          backgroundColor: '#FFFFFF',
+          cacheBust: true,
+          width: sheetWidth,
+          height: sheetHeight
+        });
+      } catch (toPngErr) {
+        console.warn('html-to-image fallback to html2canvas:', toPngErr);
+        // Fallback: html2canvas with lossless PNG
+        const canvas = await html2canvas(sheet, {
+          scale: 2.5,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#FFFFFF',
+          logging: false,
+          width: sheetWidth,
+          height: sheetHeight,
+          scrollX: 0,
+          scrollY: 0
+        });
+        imgData = canvas.toDataURL('image/png');
+      } finally {
+        sheet.style.border = origBorder;
+        sheet.style.boxShadow = origShadow;
+      }
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
     }
 
     const filename = `${doc.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}.pdf`;
@@ -91,6 +118,10 @@ export async function downloadPdfDirect(
   } catch (error) {
     console.error('Error generating direct PDF, falling back to print dialog:', error);
     window.print();
+  } finally {
+    if (transformWrapper) {
+      transformWrapper.style.transform = originalTransform;
+    }
   }
 }
 
@@ -117,36 +148,57 @@ export async function downloadCoverLetterPdfDirect(
 
   const pageWidth = 210; // mm A4
   const pageHeight = 297; // mm A4
-  const sheetWidth = element.offsetWidth;
-  const sheetHeight = element.offsetHeight;
+
+  let transformWrapper: HTMLElement | null = null;
+  let originalTransform = '';
+  let currentEl: HTMLElement | null = element;
+  while (currentEl && currentEl !== document.body) {
+    if (currentEl.style.transform && currentEl.style.transform !== 'none') {
+      transformWrapper = currentEl;
+      originalTransform = currentEl.style.transform;
+      break;
+    }
+    currentEl = currentEl.parentElement;
+  }
+
+  if (transformWrapper) {
+    transformWrapper.style.transform = 'none';
+  }
+
+  const origBorder = element.style.border;
+  const origShadow = element.style.boxShadow;
+  element.style.border = 'none';
+  element.style.boxShadow = 'none';
 
   try {
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#FFFFFF',
-      logging: false,
-      width: sheetWidth,
-      height: sheetHeight,
-      scrollX: 0,
-      scrollY: 0,
-      onclone: (clonedDoc) => {
-        const clonedEl = clonedDoc.getElementById(elementId);
-        if (clonedEl) {
-          let parent: HTMLElement | null = clonedEl.parentElement;
-          while (parent && parent !== clonedDoc.body) {
-            parent.style.transform = 'none';
-            parent = parent.parentElement;
-          }
-          clonedEl.style.boxShadow = 'none';
-          clonedEl.style.border = 'none';
-          clonedEl.style.margin = '0';
-        }
-      }
-    });
+    const sheetWidth = element.offsetWidth;
+    const sheetHeight = element.offsetHeight;
+    let imgData = '';
 
-    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+    try {
+      imgData = await toPng(element, {
+        pixelRatio: 2.5,
+        backgroundColor: '#FFFFFF',
+        cacheBust: true,
+        width: sheetWidth,
+        height: sheetHeight
+      });
+    } catch (toPngErr) {
+      console.warn('Cover letter toPng fallback to html2canvas:', toPngErr);
+      const canvas = await html2canvas(element, {
+        scale: 2.5,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#FFFFFF',
+        logging: false,
+        width: sheetWidth,
+        height: sheetHeight,
+        scrollX: 0,
+        scrollY: 0
+      });
+      imgData = canvas.toDataURL('image/png');
+    }
+
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
@@ -154,29 +206,19 @@ export async function downloadCoverLetterPdfDirect(
       compress: true
     });
 
-    const imgWidth = pageWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-    let heightLeft = imgHeight;
-    let position = 0;
-
-    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
-    heightLeft -= pageHeight;
-
-    let pageIndex = 1;
-    while (heightLeft > 8) {
-      pdf.addPage();
-      position = -(pageIndex * pageHeight);
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
-      heightLeft -= pageHeight;
-      pageIndex++;
-    }
+    pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
 
     const filename = `${cl.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}.pdf`;
     pdf.save(filename);
   } catch (error) {
     console.error('Error generating cover letter PDF:', error);
     window.print();
+  } finally {
+    element.style.border = origBorder;
+    element.style.boxShadow = origShadow;
+    if (transformWrapper) {
+      transformWrapper.style.transform = originalTransform;
+    }
   }
 }
 

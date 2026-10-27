@@ -2,11 +2,10 @@ import React from 'react';
 import { CVDocument } from '../../../types/cv';
 
 const ExecutiveSectionHeader: React.FC<{ title: string; className?: string }> = ({ title, className = 'mb-2.5' }) => (
-  <div className={className}>
-    <h2 className="text-[9.5pt] font-bold uppercase tracking-[0.12em] text-[#0A0A0A] leading-none select-none">
+  <div className={`pb-1 border-b border-[#1A1A1A] ${className}`}>
+    <h2 className="text-[9.5pt] font-bold uppercase tracking-[0.12em] text-[#0A0A0A] leading-normal select-none">
       {title}
     </h2>
-    <div className="w-full h-[0.75pt] bg-[#1A1A1A] mt-1" />
   </div>
 );
 

@@ -1,13 +1,12 @@
 import React from 'react';
 import { CVDocument } from '../../../types/cv';
 
-// Reusable standardized Section Header component
+// Reusable standardized Section Header component with guaranteed bottom border
 const SectionHeader: React.FC<{ title: string; className?: string }> = ({ title, className = 'mb-2.5' }) => (
-  <div className={className}>
-    <h2 className="text-[10pt] font-bold uppercase tracking-[0.08em] text-[#0A0A0A] leading-none select-none">
+  <div className={`pb-1 border-b border-[#1A1A1A] ${className}`}>
+    <h2 className="text-[10pt] font-bold uppercase tracking-[0.08em] text-[#0A0A0A] leading-normal select-none">
       {title}
     </h2>
-    <div className="w-full h-[0.75pt] bg-[#1A1A1A] mt-1" />
   </div>
 );
 
@@ -40,14 +39,14 @@ export const CorporateClassicTemplate: React.FC<{ doc: CVDocument }> = ({ doc })
         }}
       >
         {/* Header */}
-        <header className="text-center mb-4">
+        <header className="text-center pb-3 mb-4 border-b border-[#1A1A1A]">
           <h1 className="text-[25pt] font-semibold tracking-[-0.01em] text-[#0A0A0A] uppercase mb-1 leading-none">
             {personalInfo.fullName}
           </h1>
           <p className="text-[11pt] italic text-[#4A4845] font-sans tracking-wide mt-1.5 mb-2 leading-tight">
             {personalInfo.title}
           </p>
-          <div className="flex flex-wrap justify-center items-center gap-y-1 text-[8.5pt] font-sans text-[#4A4845] mb-2.5 leading-normal">
+          <div className="flex flex-wrap justify-center items-center gap-y-1 text-[8.5pt] font-sans text-[#4A4845] leading-normal">
             {contactItems.map((item, idx) => (
               <React.Fragment key={idx}>
                 {idx > 0 && <span className="mx-2 text-[#807D7A] select-none">•</span>}
@@ -61,7 +60,6 @@ export const CorporateClassicTemplate: React.FC<{ doc: CVDocument }> = ({ doc })
               </React.Fragment>
             ))}
           </div>
-          <div className="w-full h-[0.75pt] bg-[#1A1A1A]" />
         </header>
 
         {/* Executive Summary */}
