@@ -1,0 +1,328 @@
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { CVDocument, CoverLetterDocument, TemplateId, CVStyleSettings } from '../types/cv';
+import { INITIAL_CV, INITIAL_COVER_LETTER } from '../data/mockCV';
+import { generateLatexSource } from '../utils/latexGenerator';
+
+interface CVContextType {
+  documents: CVDocument[];
+  currentDoc: CVDocument;
+  coverLetters: CoverLetterDocument[];
+  currentCoverLetter: CoverLetterDocument;
+  saveStatus: 'saved' | 'saving' | 'unsaved';
+  canUndo: boolean;
+  canRedo: boolean;
+  activeMode: 'visual' | 'latex' | 'preview';
+  setActiveMode: (mode: 'visual' | 'latex' | 'preview') => void;
+  setCurrentDocId: (id: string) => void;
+  updateDoc: (updater: (prev: CVDocument) => CVDocument) => void;
+  updateField: <K extends keyof CVDocument>(key: K, value: CVDocument[K]) => void;
+  updateSettings: (settings: Partial<CVStyleSettings>) => void;
+  setTemplate: (templateId: TemplateId) => void;
+  updateLatex: (source: string) => void;
+  createNewDoc: (templateId?: TemplateId, title?: string) => string;
+  duplicateDoc: (id: string) => string;
+  deleteDoc: (id: string) => void;
+  undo: () => void;
+  redo: () => void;
+  resetToDefault: () => void;
+  updateCoverLetter: (updater: (prev: CoverLetterDocument) => CoverLetterDocument) => void;
+  createNewCoverLetter: (title?: string) => string;
+}
+
+const STORAGE_KEY_DOCS = 'atelier_cv_documents_v2';
+const STORAGE_KEY_ACTIVE = 'atelier_active_cv_id_v2';
+const STORAGE_KEY_CLS = 'atelier_cover_letters_v2';
+
+const CVContext = createContext<CVContextType | null>(null);
+
+export const CVProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Load documents
+  const [documents, setDocuments] = useState<CVDocument[]>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY_DOCS);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.warn('Failed to parse stored CV documents', e);
+    }
+    return [INITIAL_CV];
+  });
+
+  const [activeDocId, setActiveDocId] = useState<string>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY_ACTIVE);
+      if (stored) return stored;
+    } catch (e) {}
+    return INITIAL_CV.id;
+  });
+
+  // Cover Letters
+  const [coverLetters, setCoverLetters] = useState<CoverLetterDocument[]>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY_CLS);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return [INITIAL_COVER_LETTER];
+  });
+
+  const [activeCoverLetterId, setActiveCoverLetterId] = useState<string>(INITIAL_COVER_LETTER.id);
+
+  const [activeMode, setActiveMode] = useState<'visual' | 'latex' | 'preview'>('visual');
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+
+  // History stack for Undo/Redo
+  const [history, setHistory] = useState<CVDocument[]>([]);
+  const [future, setFuture] = useState<CVDocument[]>([]);
+
+  // Find current document
+  const currentDoc = documents.find(d => d.id === activeDocId) || documents[0] || INITIAL_CV;
+  const currentCoverLetter = coverLetters.find(cl => cl.id === activeCoverLetterId) || coverLetters[0] || INITIAL_COVER_LETTER;
+
+  // Persist to local storage
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    setSaveStatus('saving');
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+
+    saveTimeoutRef.current = setTimeout(() => {
+      try {
+        localStorage.setItem(STORAGE_KEY_DOCS, JSON.stringify(documents));
+        localStorage.setItem(STORAGE_KEY_ACTIVE, activeDocId);
+        localStorage.setItem(STORAGE_KEY_CLS, JSON.stringify(coverLetters));
+        setSaveStatus('saved');
+      } catch (e) {
+        console.error('Storage quota exceeded or error saving documents', e);
+      }
+    }, 400);
+
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
+  }, [documents, activeDocId, coverLetters]);
+
+  // Update current doc with history tracking
+  const updateDoc = useCallback((updater: (prev: CVDocument) => CVDocument) => {
+    setDocuments(prevDocs => {
+      const targetIdx = prevDocs.findIndex(d => d.id === activeDocId);
+      if (targetIdx === -1) return prevDocs;
+
+      const oldDoc = prevDocs[targetIdx];
+      // Push previous state to history
+      setHistory(h => [...h.slice(-30), oldDoc]);
+      setFuture([]); // clear redo stack
+
+      const updated = updater({
+        ...oldDoc,
+        lastModified: new Date().toISOString()
+      });
+
+      // Synchronize LaTeX source if not marked as custom
+      if (!updated.isCustomLatex) {
+        updated.latexSource = generateLatexSource(updated);
+      }
+
+      const nextDocs = [...prevDocs];
+      nextDocs[targetIdx] = updated;
+      return nextDocs;
+    });
+  }, [activeDocId]);
+
+  const updateField = useCallback(<K extends keyof CVDocument>(key: K, value: CVDocument[K]) => {
+    updateDoc(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  }, [updateDoc]);
+
+  const updateSettings = useCallback((newSettings: Partial<CVStyleSettings>) => {
+    updateDoc(prev => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        ...newSettings
+      }
+    }));
+  }, [updateDoc]);
+
+  const setTemplate = useCallback((templateId: TemplateId) => {
+    updateDoc(prev => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        templateId
+      }
+    }));
+  }, [updateDoc]);
+
+  const updateLatex = useCallback((source: string) => {
+    updateDoc(prev => ({
+      ...prev,
+      latexSource: source,
+      isCustomLatex: true
+    }));
+  }, [updateDoc]);
+
+  const undo = useCallback(() => {
+    if (history.length === 0) return;
+    const previous = history[history.length - 1];
+    setHistory(h => h.slice(0, h.length - 1));
+    setFuture(f => [currentDoc, ...f]);
+
+    setDocuments(prevDocs => {
+      const idx = prevDocs.findIndex(d => d.id === activeDocId);
+      if (idx === -1) return prevDocs;
+      const nextDocs = [...prevDocs];
+      nextDocs[idx] = previous;
+      return nextDocs;
+    });
+  }, [history, currentDoc, activeDocId]);
+
+  const redo = useCallback(() => {
+    if (future.length === 0) return;
+    const next = future[0];
+    setFuture(f => f.slice(1));
+    setHistory(h => [...h, currentDoc]);
+
+    setDocuments(prevDocs => {
+      const idx = prevDocs.findIndex(d => d.id === activeDocId);
+      if (idx === -1) return prevDocs;
+      const nextDocs = [...prevDocs];
+      nextDocs[idx] = next;
+      return nextDocs;
+    });
+  }, [future, currentDoc, activeDocId]);
+
+  const createNewDoc = useCallback((templateId: TemplateId = 'corporate-classic', title = 'Executive Resume'): string => {
+    const newId = `doc-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    const newDoc: CVDocument = {
+      ...INITIAL_CV,
+      id: newId,
+      title: `${title} (${new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })})`,
+      createdAt: new Date().toISOString(),
+      lastModified: new Date().toISOString(),
+      settings: {
+        ...INITIAL_CV.settings,
+        templateId
+      }
+    };
+    newDoc.latexSource = generateLatexSource(newDoc);
+
+    setDocuments(prev => [newDoc, ...prev]);
+    setActiveDocId(newId);
+    setHistory([]);
+    setFuture([]);
+    return newId;
+  }, []);
+
+  const duplicateDoc = useCallback((id: string): string => {
+    const source = documents.find(d => d.id === id);
+    if (!source) return id;
+
+    const newId = `doc-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    const duplicated: CVDocument = {
+      ...JSON.parse(JSON.stringify(source)),
+      id: newId,
+      title: `${source.title} (Copy)`,
+      createdAt: new Date().toISOString(),
+      lastModified: new Date().toISOString()
+    };
+
+    setDocuments(prev => [duplicated, ...prev]);
+    setActiveDocId(newId);
+    return newId;
+  }, [documents]);
+
+  const deleteDoc = useCallback((id: string) => {
+    setDocuments(prev => {
+      if (prev.length <= 1) {
+        // Prevent deleting the last document; reset to initial
+        return [INITIAL_CV];
+      }
+      const filtered = prev.filter(d => d.id !== id);
+      if (activeDocId === id) {
+        setActiveDocId(filtered[0].id);
+      }
+      return filtered;
+    });
+  }, [activeDocId]);
+
+  const resetToDefault = useCallback(() => {
+    setDocuments([INITIAL_CV]);
+    setActiveDocId(INITIAL_CV.id);
+    setHistory([]);
+    setFuture([]);
+  }, []);
+
+  const updateCoverLetter = useCallback((updater: (prev: CoverLetterDocument) => CoverLetterDocument) => {
+    setCoverLetters(prevList => {
+      const idx = prevList.findIndex(cl => cl.id === activeCoverLetterId);
+      if (idx === -1) return prevList;
+      const updated = updater({
+        ...prevList[idx],
+        lastModified: new Date().toISOString()
+      });
+      const nextList = [...prevList];
+      nextList[idx] = updated;
+      return nextList;
+    });
+  }, [activeCoverLetterId]);
+
+  const createNewCoverLetter = useCallback((title = 'Strategic Cover Letter'): string => {
+    const newId = `cl-${Date.now()}`;
+    const newCl: CoverLetterDocument = {
+      ...INITIAL_COVER_LETTER,
+      id: newId,
+      title,
+      lastModified: new Date().toISOString()
+    };
+    setCoverLetters(prev => [newCl, ...prev]);
+    setActiveCoverLetterId(newId);
+    return newId;
+  }, []);
+
+  return (
+    <CVContext.Provider
+      value={{
+        documents,
+        currentDoc,
+        coverLetters,
+        currentCoverLetter,
+        saveStatus,
+        canUndo: history.length > 0,
+        canRedo: future.length > 0,
+        activeMode,
+        setActiveMode,
+        setCurrentDocId: setActiveDocId,
+        updateDoc,
+        updateField,
+        updateSettings,
+        setTemplate,
+        updateLatex,
+        createNewDoc,
+        duplicateDoc,
+        deleteDoc,
+        undo,
+        redo,
+        resetToDefault,
+        updateCoverLetter,
+        createNewCoverLetter
+      }}
+    >
+      {children}
+    </CVContext.Provider>
+  );
+};
+
+export const useCV = () => {
+  const context = useContext(CVContext);
+  if (!context) {
+    throw new Error('useCV must be used within a CVProvider');
+  }
+  return context;
+};

@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-main: #F5F5F3;
+    --text-primary: #0A0A0A;
+    --text-secondary: #807D7A;
+    --accent: #8C8172;
+    --border: #E5E3DF;
+    --doc-bg: #FFFFFF;
+    --muted-surface: #EFEEEA;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom subtle scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #D1CECA;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #807D7A;
+  }
+}
+
+/* Print styling for 1:1 true vector PDF generation */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .no-print,
+  nav,
+  header,
+  aside,
+  .editor-sidebar,
+  .editor-center,
+  .editor-toolbar,
+  .floating-controls {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .cv-document-sheet {
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    page-break-after: always;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+}
+
+/* Luxury hairline borders and animations */
+.hairline-border {
+  border: 1px solid #E5E3DF;
+}
+
+.hairline-b {
+  border-bottom: 1px solid #E5E3DF;
+}
+
+.hairline-t {
+  border-top: 1px solid #E5E3DF;
+}
+
+.hairline-r {
+  border-right: 1px solid #E5E3DF;
+}
+
+.hairline-l {
+  border-left: 1px solid #E5E3DF;
+}
+
+/* Subtle transitions */
+.transition-luxury {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
