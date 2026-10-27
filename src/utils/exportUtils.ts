@@ -1,7 +1,154 @@
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import { CVDocument } from '../types/cv';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
+import { CVDocument, CoverLetterDocument } from '../types/cv';
 import { generateLatexSource } from './latexGenerator';
+
+/**
+ * Directly renders and downloads the CV as a crisp, multi-page vector-quality PDF file
+ */
+export async function downloadPdfDirect(
+  doc: CVDocument,
+  elementId = 'cv-printable-document'
+): Promise<void> {
+  const element = document.getElementById(elementId);
+  if (!element) {
+    // Fallback if DOM element is not rendered
+    window.print();
+    return;
+  }
+
+  const isA4 = doc.settings.paperSize === 'a4';
+  const pageWidth = isA4 ? 210 : 215.9; // mm
+  const pageHeight = isA4 ? 297 : 279.4; // mm
+
+  try {
+    const canvas = await html2canvas(element, {
+      scale: 2, // 2x high-resolution capture for crisp typography
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#FFFFFF',
+      logging: false,
+      windowWidth: 1200,
+      onclone: (clonedDoc) => {
+        const clonedEl = clonedDoc.getElementById(elementId);
+        if (clonedEl) {
+          // Remove parent transforms so capture is unwarped at 1:1 scale
+          let parent: HTMLElement | null = clonedEl.parentElement;
+          while (parent && parent !== clonedDoc.body) {
+            parent.style.transform = 'none';
+            parent = parent.parentElement;
+          }
+        }
+      }
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: isA4 ? 'a4' : 'letter',
+      compress: true
+    });
+
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    // Page 1
+    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+    heightLeft -= pageHeight;
+
+    // Additional pages if document spans multiple pages
+    let pageIndex = 1;
+    while (heightLeft > 8) {
+      pdf.addPage();
+      position = -(pageIndex * pageHeight);
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+      heightLeft -= pageHeight;
+      pageIndex++;
+    }
+
+    const filename = `${doc.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}.pdf`;
+    pdf.save(filename);
+  } catch (error) {
+    console.error('Error generating direct PDF, falling back to print dialog:', error);
+    window.print();
+  }
+}
+
+/**
+ * Directly renders and downloads the Cover Letter as a PDF file
+ */
+export async function downloadCoverLetterPdfDirect(
+  cl: CoverLetterDocument,
+  elementId = 'cv-printable-document'
+): Promise<void> {
+  const element = document.getElementById(elementId);
+  if (!element) {
+    window.print();
+    return;
+  }
+
+  const pageWidth = 210; // mm A4
+  const pageHeight = 297; // mm A4
+
+  try {
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#FFFFFF',
+      logging: false,
+      windowWidth: 1200,
+      onclone: (clonedDoc) => {
+        const clonedEl = clonedDoc.getElementById(elementId);
+        if (clonedEl) {
+          let parent: HTMLElement | null = clonedEl.parentElement;
+          while (parent && parent !== clonedDoc.body) {
+            parent.style.transform = 'none';
+            parent = parent.parentElement;
+          }
+        }
+      }
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: true
+    });
+
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+    heightLeft -= pageHeight;
+
+    let pageIndex = 1;
+    while (heightLeft > 8) {
+      pdf.addPage();
+      position = -(pageIndex * pageHeight);
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+      heightLeft -= pageHeight;
+      pageIndex++;
+    }
+
+    const filename = `${cl.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}.pdf`;
+    pdf.save(filename);
+  } catch (error) {
+    console.error('Error generating cover letter PDF:', error);
+    window.print();
+  }
+}
 
 /**
  * Triggers standard browser print dialog styled for 1:1 vector PDF printing

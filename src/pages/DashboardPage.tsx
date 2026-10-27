@@ -20,7 +20,7 @@ import {
 import { useCV } from '../context/CVContext';
 import { TEMPLATES } from '../data/templates';
 import { TemplateId } from '../types/cv';
-import { exportToPdfPrint } from '../utils/exportUtils';
+import { exportToPdfPrint, downloadPdfDirect } from '../utils/exportUtils';
 import { CVDocumentRenderer } from '../components/preview/CVDocumentRenderer';
 
 export const DashboardPage: React.FC = () => {
@@ -298,6 +298,17 @@ export const DashboardPage: React.FC = () => {
                               >
                                 <FileText className="w-3.5 h-3.5 text-[#8C8172]" />
                                 <span>Edit Document</span>
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  downloadPdfDirect(doc);
+                                  setMenuOpenDocId(null);
+                                }}
+                                className="w-full px-3 py-1.5 text-left text-[#0A0A0A] hover:bg-[#EFEEEA] flex items-center gap-2"
+                              >
+                                <Download className="w-3.5 h-3.5 text-[#8C8172]" />
+                                <span>Download PDF</span>
                               </button>
                               <button
                                 onClick={(e) => handleDuplicate(doc.id, e)}

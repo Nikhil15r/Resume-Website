@@ -15,12 +15,19 @@ import {
   Maximize2,
   Sparkles,
   Archive,
-  ArrowLeft
+  ArrowLeft,
+  RefreshCw
 } from 'lucide-react';
 import { useCV } from '../../context/CVContext';
 import { TEMPLATES } from '../../data/templates';
 import { TemplateId } from '../../types/cv';
-import { exportToPdfPrint, downloadLatexSource, exportLatexProjectZip, downloadJsonBackup } from '../../utils/exportUtils';
+import { 
+  downloadPdfDirect, 
+  exportToPdfPrint, 
+  downloadLatexSource, 
+  exportLatexProjectZip, 
+  downloadJsonBackup 
+} from '../../utils/exportUtils';
 
 interface EditorToolbarProps {
   zoom: number;
@@ -50,6 +57,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   const [docTitle, setDocTitle] = useState(currentDoc.title);
   const [templateDropdownOpen, setTemplateDropdownOpen] = useState(false);
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   const handleTitleSubmit = () => {
     setIsEditingTitle(false);
@@ -57,6 +65,15 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
       updateField('title', docTitle.trim());
     } else {
       setDocTitle(currentDoc.title);
+    }
+  };
+
+  const handleDirectDownload = async () => {
+    setIsExportingPdf(true);
+    try {
+      await downloadPdfDirect(currentDoc);
+    } finally {
+      setIsExportingPdf(false);
     }
   };
 
@@ -251,11 +268,17 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
         <div className="relative">
           <div className="flex items-center">
             <button
-              onClick={exportToPdfPrint}
-              className="px-3 sm:px-4 py-2 bg-[#0A0A0A] hover:bg-[#8C8172] text-white text-xs uppercase tracking-[0.12em] font-medium rounded-l-sm transition-colors flex items-center gap-2 shadow-subtle"
+              onClick={handleDirectDownload}
+              disabled={isExportingPdf}
+              className="px-3 sm:px-4 py-2 bg-[#0A0A0A] hover:bg-[#8C8172] text-white text-xs uppercase tracking-[0.12em] font-medium rounded-l-sm transition-colors flex items-center gap-2 shadow-subtle disabled:opacity-60"
+              title="Download PDF directly"
             >
-              <Printer className="w-3.5 h-3.5" />
-              <span>Export PDF</span>
+              {isExportingPdf ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#8C8172]" />
+              ) : (
+                <Download className="w-3.5 h-3.5" />
+              )}
+              <span>{isExportingPdf ? 'Exporting PDF...' : 'Download PDF'}</span>
             </button>
             <button
               onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
@@ -269,16 +292,27 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
           {exportDropdownOpen && (
             <div
               onClick={() => setExportDropdownOpen(false)}
-              className="absolute right-0 top-full mt-1 w-52 bg-white border border-[#E5E3DF] rounded-sm shadow-floating py-1.5 z-40 text-xs"
+              className="absolute right-0 top-full mt-1 w-56 bg-white border border-[#E5E3DF] rounded-sm shadow-floating py-1.5 z-40 text-xs"
             >
+              <button
+                onClick={handleDirectDownload}
+                className="w-full px-3 py-2 text-left hover:bg-[#EFEEEA] flex items-center gap-2 text-[#0A0A0A]"
+              >
+                <Download className="w-3.5 h-3.5 text-[#8C8172]" />
+                <div>
+                  <div className="font-medium">Direct PDF Download</div>
+                  <div className="text-[10px] text-[#807D7A]">Saves .pdf file directly to disk</div>
+                </div>
+              </button>
+
               <button
                 onClick={exportToPdfPrint}
                 className="w-full px-3 py-2 text-left hover:bg-[#EFEEEA] flex items-center gap-2 text-[#0A0A0A]"
               >
                 <Printer className="w-3.5 h-3.5 text-[#8C8172]" />
                 <div>
-                  <div className="font-medium">Print / Save as PDF</div>
-                  <div className="text-[10px] text-[#807D7A]">Exact 1:1 Vector Print</div>
+                  <div className="font-medium">Print / Browser PDF Dialog</div>
+                  <div className="text-[10px] text-[#807D7A]">Uses system print engine</div>
                 </div>
               </button>
 

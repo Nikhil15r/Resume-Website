@@ -4,13 +4,23 @@ import { ArrowLeft, Printer, Download, Archive, RefreshCw, ZoomIn, ZoomOut, Chec
 import { useCV } from '../context/CVContext';
 import { LaTeXEditor } from '../components/editor/LaTeXEditor';
 import { CVDocumentRenderer } from '../components/preview/CVDocumentRenderer';
-import { exportToPdfPrint, downloadLatexSource, exportLatexProjectZip } from '../utils/exportUtils';
+import { exportToPdfPrint, downloadLatexSource, exportLatexProjectZip, downloadPdfDirect } from '../utils/exportUtils';
 import { TEMPLATES } from '../data/templates';
 
 export const LatexStudioPage: React.FC = () => {
   const { currentDoc, documents, setCurrentDocId, setTemplate } = useCV();
   const [zoom, setZoom] = useState<number>(0.78);
   const [docDropdownOpen, setDocDropdownOpen] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+
+  const handleDirectDownload = async () => {
+    setIsDownloadingPdf(true);
+    try {
+      await downloadPdfDirect(currentDoc);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
 
   return (
     <div className="h-screen flex flex-col bg-[#0A0A0A] text-[#F5F5F3] overflow-hidden selection:bg-[#8C8172] selection:text-white">
@@ -96,11 +106,16 @@ export const LatexStudioPage: React.FC = () => {
           </Link>
 
           <button
-            onClick={exportToPdfPrint}
-            className="px-3.5 py-1.5 bg-[#8C8172] hover:bg-[#786E60] text-white text-xs font-mono uppercase tracking-wider font-medium rounded-sm transition-colors flex items-center gap-2 shadow-sm"
+            onClick={handleDirectDownload}
+            disabled={isDownloadingPdf}
+            className="px-3.5 py-1.5 bg-[#8C8172] hover:bg-[#786E60] text-white text-xs font-mono uppercase tracking-wider font-medium rounded-sm transition-colors flex items-center gap-2 shadow-sm disabled:opacity-60"
           >
-            <Printer className="w-3.5 h-3.5" />
-            <span>PDF Print</span>
+            {isDownloadingPdf ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Download className="w-3.5 h-3.5" />
+            )}
+            <span>{isDownloadingPdf ? 'Compiling PDF...' : 'Download PDF'}</span>
           </button>
         </div>
       </header>

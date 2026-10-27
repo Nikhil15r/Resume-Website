@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Printer, Plus, Trash2, Copy, Check } from 'lucide-react';
+import { ArrowLeft, Printer, Plus, Trash2, Copy, Check, Download, RefreshCw } from 'lucide-react';
 import { useCV } from '../context/CVContext';
-import { exportToPdfPrint } from '../utils/exportUtils';
+import { downloadCoverLetterPdfDirect, exportToPdfPrint } from '../utils/exportUtils';
 import { CoverLetterDocument } from '../types/cv';
 
 export const CoverLetterPage: React.FC = () => {
   const { currentCoverLetter, updateCoverLetter, createNewCoverLetter, currentDoc } = useCV();
   const [zoom, setZoom] = useState<number>(0.85);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+
+  const handleDirectDownload = async () => {
+    setIsDownloadingPdf(true);
+    try {
+      await downloadCoverLetterPdfDirect(currentCoverLetter);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
 
   const handleUpdate = (field: keyof CoverLetterDocument, value: any) => {
     updateCoverLetter(prev => ({
@@ -65,11 +75,23 @@ export const CoverLetterPage: React.FC = () => {
             New Cover Letter
           </button>
           <button
+            onClick={handleDirectDownload}
+            disabled={isDownloadingPdf}
+            className="px-4 py-2 bg-[#0A0A0A] hover:bg-[#8C8172] text-white text-xs uppercase tracking-wider font-medium rounded-sm transition-colors flex items-center gap-2 shadow-subtle disabled:opacity-60"
+          >
+            {isDownloadingPdf ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#8C8172]" />
+            ) : (
+              <Download className="w-3.5 h-3.5" />
+            )}
+            <span>{isDownloadingPdf ? 'Generating PDF...' : 'Download PDF'}</span>
+          </button>
+          <button
             onClick={exportToPdfPrint}
-            className="px-4 py-2 bg-[#0A0A0A] hover:bg-[#8C8172] text-white text-xs uppercase tracking-wider font-medium rounded-sm transition-colors flex items-center gap-2 shadow-subtle"
+            className="p-2 border border-[#E5E3DF] hover:bg-[#EFEEEA] rounded-sm text-[#807D7A] hover:text-[#0A0A0A] transition-colors"
+            title="Print Dialog"
           >
             <Printer className="w-3.5 h-3.5" />
-            <span>Export Letter PDF</span>
           </button>
         </div>
       </header>
