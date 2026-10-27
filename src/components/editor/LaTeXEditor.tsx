@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Play, 
   Download, 
@@ -9,14 +9,15 @@ import {
   RefreshCw, 
   FileCode,
   Copy,
-  Info
+  Check,
+  Sparkles
 } from 'lucide-react';
 import { useCV } from '../../context/CVContext';
 import { generateLatexSource } from '../../utils/latexGenerator';
 import { downloadLatexSource, exportLatexProjectZip } from '../../utils/exportUtils';
 
 export const LaTeXEditor: React.FC = () => {
-  const { currentDoc, updateLatex } = useCV();
+  const { currentDoc, updateLatex, saveAndRefreshFromLatex } = useCV();
   
   // Use either custom LaTeX or generate from current document
   const initialSource = currentDoc.latexSource || generateLatexSource(currentDoc);
@@ -26,6 +27,8 @@ export const LaTeXEditor: React.FC = () => {
   const [compilationSuccess, setCompilationSuccess] = useState<boolean | null>(null);
   const [showLogs, setShowLogs] = useState<boolean>(true);
   const [copied, setCopied] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Sync state if doc changes externally and not custom
   useEffect(() => {
@@ -41,48 +44,74 @@ export const LaTeXEditor: React.FC = () => {
     updateLatex(val);
   };
 
-  const handleCompile = () => {
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = setTimeout(() => {
+      setToastMessage(null);
+    }, 3200);
+  };
+
+  const executeSaveAndCompile = useCallback(() => {
     setCompiling(true);
-    setLogs(['[ATELIER-TEX] Initializing pdfTeX v3.141592653-2.6-1.40.24 (TeX Live 2026)...', 'parsing packages: geometry, charter, microtype, enumitem, xcolor, hyperref, titlesec...']);
+    setLogs([
+      `[ATELIER-TEX ${new Date().toLocaleTimeString()}] Parsing TeX source with pdfTeX 3.14159...`,
+      'Analyzing preamble: geometry, charter, titlesec, enumitem, xcolor, hyperref...'
+    ]);
 
     setTimeout(() => {
-      // Check syntax basic checks (e.g. matching begin/end)
-      const hasBeginDoc = sourceCode.includes('\\begin{document}');
-      const hasEndDoc = sourceCode.includes('\\end{document}');
+      const result = saveAndRefreshFromLatex(sourceCode);
 
-      if (!hasBeginDoc || !hasEndDoc) {
+      if (!result.success) {
         setLogs(prev => [
           ...prev,
-          `! LaTeX Error: Missing ${!hasBeginDoc ? '\\begin{document}' : '\\end{document}'}`,
-          '1 error, 0 warnings found during pass 1.',
-          'Compilation aborted. Previous document state preserved.'
+          '! LaTeX Error: Missing \\begin{document} or \\end{document}',
+          '1 error found during pass 1. Document view preserved.'
         ]);
         setCompilationSuccess(false);
+        showToast('Error: Missing \\begin{document} or \\end{document}');
       } else {
-        const timeMs = Math.floor(Math.random() * 80) + 120;
+        const timeMs = Math.floor(Math.random() * 50) + 95;
         setLogs(prev => [
           ...prev,
-          'Shipout: Output written on main.pdf (1 page, 38,412 bytes).',
-          'Transcript written on main.log.',
-          `Success: Compilation finished cleanly in ${timeMs}ms with 0 errors.`
+          'Parsed sections: Header, Summary, Experience, Education, Skills, Projects.',
+          'Shipout: Output written on main.pdf (A4 Vector format).',
+          `Success: Compilation finished cleanly in ${timeMs}ms with 0 errors.`,
+          'CV Preview refreshed and synchronized.'
         ]);
         setCompilationSuccess(true);
+        showToast('Saved & View Refreshed');
       }
       setCompiling(false);
-    }, 600);
-  };
+    }, 200);
+  }, [sourceCode, saveAndRefreshFromLatex]);
+
+  // Global Ctrl + S / Cmd + S listener for the LaTeX editor
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        executeSaveAndCompile();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [executeSaveAndCompile]);
 
   const handleResetToGenerated = () => {
     if (window.confirm('Reset LaTeX source to match current visual editor fields? Any manual edits will be overwritten.')) {
       const generated = generateLatexSource(currentDoc);
       setSourceCode(generated);
       updateLatex(generated);
+      showToast('Re-synced from Visual Fields');
     }
   };
 
   const handleCopy = () => {
     navigator.clipboard.writeText(sourceCode);
     setCopied(true);
+    showToast('Source code copied to clipboard');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -91,7 +120,16 @@ export const LaTeXEditor: React.FC = () => {
   const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1);
 
   return (
-    <div className="flex flex-col h-full bg-[#0A0A0A] text-[#F5F5F3] rounded-sm overflow-hidden border border-[#222]">
+    <div className="flex flex-col h-full bg-[#0A0A0A] text-[#F5F5F3] rounded-sm overflow-hidden border border-[#222] relative">
+      {/* Save & Compile Toast Notification */}
+      {toastMessage && (
+        <div className="absolute top-12 right-6 z-50 bg-[#1A1A1A] text-white border border-[#8C8172] px-3.5 py-2 rounded shadow-2xl flex items-center gap-2 text-xs font-mono animate-in fade-in slide-in-from-top-2 duration-150">
+          <Sparkles className="w-3.5 h-3.5 text-[#8C8172]" />
+          <span>{toastMessage}</span>
+          <span className="text-[10px] text-[#807D7A] bg-[#262626] px-1.5 py-0.5 rounded">Ctrl+S</span>
+        </div>
+      )}
+
       {/* Top LaTeX Actions Bar */}
       <div className="flex flex-wrap items-center justify-between px-4 py-2.5 bg-[#141414] border-b border-[#262626] gap-2">
         <div className="flex items-center gap-2">
@@ -114,7 +152,7 @@ export const LaTeXEditor: React.FC = () => {
             className="px-2.5 py-1 text-xs font-mono text-[#807D7A] hover:text-white bg-[#1A1A1A] hover:bg-[#2A2A2A] rounded-sm transition-colors flex items-center gap-1"
             title="Copy Source"
           >
-            <Copy className="w-3.5 h-3.5" />
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
             <span>{copied ? 'Copied' : 'Copy'}</span>
           </button>
 
@@ -132,6 +170,7 @@ export const LaTeXEditor: React.FC = () => {
             type="button"
             onClick={() => downloadLatexSource(currentDoc)}
             className="px-2.5 py-1 text-xs font-mono text-[#807D7A] hover:text-white bg-[#1A1A1A] hover:bg-[#2A2A2A] rounded-sm transition-colors flex items-center gap-1"
+            title="Download .tex File"
           >
             <Download className="w-3.5 h-3.5" />
             <span>.tex</span>
@@ -141,6 +180,7 @@ export const LaTeXEditor: React.FC = () => {
             type="button"
             onClick={() => exportLatexProjectZip(currentDoc)}
             className="px-2.5 py-1 text-xs font-mono text-[#807D7A] hover:text-white bg-[#1A1A1A] hover:bg-[#2A2A2A] rounded-sm transition-colors flex items-center gap-1"
+            title="Download Project ZIP"
           >
             <Archive className="w-3.5 h-3.5" />
             <span>Project ZIP</span>
@@ -148,12 +188,16 @@ export const LaTeXEditor: React.FC = () => {
 
           <button
             type="button"
-            onClick={handleCompile}
+            onClick={executeSaveAndCompile}
             disabled={compiling}
+            title="Compile TeX & Refresh CV View (Ctrl+S)"
             className="px-3.5 py-1 bg-[#8C8172] hover:bg-[#786E60] text-white text-xs font-mono font-medium rounded-sm transition-colors flex items-center gap-1.5 shadow-sm disabled:opacity-50"
           >
             <Play className={`w-3.5 h-3.5 fill-current ${compiling ? 'animate-spin' : ''}`} />
             <span>{compiling ? 'Compiling...' : 'Compile TeX'}</span>
+            <span className="hidden sm:inline-block text-[9px] bg-black/30 px-1 py-0.5 rounded text-[#EFEEEA]/80 font-mono">
+              Ctrl+S
+            </span>
           </button>
         </div>
       </div>

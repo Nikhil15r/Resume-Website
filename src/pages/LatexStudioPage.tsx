@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Printer, Download, Archive, RefreshCw, ZoomIn, ZoomOut, Check, ChevronDown } from 'lucide-react';
 import { useCV } from '../context/CVContext';
 import { LaTeXEditor } from '../components/editor/LaTeXEditor';
+import { LaTeXSplitLayout } from '../components/editor/LaTeXSplitLayout';
 import { CVDocumentRenderer } from '../components/preview/CVDocumentRenderer';
 import { exportToPdfPrint, downloadLatexSource, exportLatexProjectZip, downloadPdfDirect } from '../utils/exportUtils';
 import { TEMPLATES } from '../data/templates';
@@ -120,25 +121,28 @@ export const LatexStudioPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Studio Area: Split View */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* Left 55%: LaTeX Code Editor */}
-        <div className="flex-1 p-3 sm:p-4 overflow-hidden">
-          <LaTeXEditor />
-        </div>
+      {/* Main Studio Area: Resizable / Shrinkable Split View */}
+      <LaTeXSplitLayout
+        theme="dark"
+        editor={<LaTeXEditor />}
+        preview={
+          <div className="w-full flex flex-col items-center p-6">
+            <div className="w-full flex items-center justify-between pb-3 mb-4 border-b border-[#262626] text-xs font-mono text-[#807D7A]">
+              <span className="text-[#8C8172] flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                Typeset Preview (A4 Vector)
+              </span>
+              <span className="bg-[#1A1A1A] px-2 py-0.5 rounded text-[#D1CECA] border border-[#333]">
+                {currentDoc.settings.templateId.toUpperCase()}
+              </span>
+            </div>
 
-        {/* Right 45%: Document Preview Surface */}
-        <div className="hidden lg:flex w-[480px] xl:w-[580px] bg-[#121212] border-l border-[#262626] p-6 overflow-y-auto flex-col items-center">
-          <div className="w-full flex items-center justify-between pb-3 mb-4 border-b border-[#262626] text-xs font-mono text-[#807D7A]">
-            <span className="text-[#8C8172]">Typeset Preview (A4 Vector)</span>
-            <span>{currentDoc.settings.templateId.toUpperCase()}</span>
+            <div className="w-full flex justify-center py-2">
+              <CVDocumentRenderer doc={currentDoc} zoom={zoom} />
+            </div>
           </div>
-
-          <div className="w-full flex justify-center py-2">
-            <CVDocumentRenderer doc={currentDoc} zoom={zoom} />
-          </div>
-        </div>
-      </div>
+        }
+      />
     </div>
   );
 };

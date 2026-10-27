@@ -12,6 +12,7 @@ import { ProjectsForm } from '../components/editor/forms/ProjectsForm';
 import { CertificationsForm } from '../components/editor/forms/CertificationsForm';
 import { StyleSettingsForm } from '../components/editor/forms/StyleSettingsForm';
 import { LaTeXEditor } from '../components/editor/LaTeXEditor';
+import { LaTeXSplitLayout } from '../components/editor/LaTeXSplitLayout';
 import { CVDocumentRenderer } from '../components/preview/CVDocumentRenderer';
 
 export const EditorPage: React.FC = () => {
@@ -74,22 +75,25 @@ export const EditorPage: React.FC = () => {
             <CVDocumentRenderer doc={currentDoc} zoom={zoom} />
           </div>
         ) : activeMode === 'latex' ? (
-          /* LaTeX Studio Mode: Split or Full */
-          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-            {/* LaTeX Code Editor Panel */}
-            <div className="flex-1 p-3 sm:p-4 overflow-hidden">
-              <LaTeXEditor />
-            </div>
-
-            {/* LaTeX Preview Panel */}
-            <div className="hidden lg:flex w-[480px] xl:w-[560px] bg-[#EFEEEA] border-l border-[#E5E3DF] p-6 overflow-y-auto flex-col items-center">
-              <div className="w-full flex items-center justify-between pb-3 mb-4 border-b border-[#E5E3DF] text-xs text-[#807D7A]">
-                <span className="font-mono text-[10px] uppercase text-[#8C8172]">Rendered Typeset</span>
-                <span>{currentDoc.settings.paperSize.toUpperCase()}</span>
+          /* LaTeX Studio Mode: Resizable Split View */
+          <LaTeXSplitLayout
+            theme="light"
+            editor={<LaTeXEditor />}
+            preview={
+              <div className="w-full flex flex-col items-center p-6">
+                <div className="w-full flex items-center justify-between pb-3 mb-4 border-b border-[#E5E3DF] text-xs text-[#807D7A]">
+                  <span className="font-mono text-[10px] uppercase text-[#8C8172] flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Rendered Typeset
+                  </span>
+                  <span>{currentDoc.settings.paperSize.toUpperCase()}</span>
+                </div>
+                <div className="w-full flex justify-center py-2">
+                  <CVDocumentRenderer doc={currentDoc} zoom={0.75} />
+                </div>
               </div>
-              <CVDocumentRenderer doc={currentDoc} zoom={0.75} />
-            </div>
-          </div>
+            }
+          />
         ) : (
           /* Visual Editor Mode: 3-Panel Layout */
           <>

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { CVDocument, CoverLetterDocument, TemplateId, CVStyleSettings } from '../types/cv';
 import { INITIAL_CV, INITIAL_COVER_LETTER } from '../data/mockCV';
 import { generateLatexSource } from '../utils/latexGenerator';
+import { parseLatexSource } from '../utils/latexParser';
 
 interface CVContextType {
   documents: CVDocument[];
@@ -19,6 +20,7 @@ interface CVContextType {
   updateSettings: (settings: Partial<CVStyleSettings>) => void;
   setTemplate: (templateId: TemplateId) => void;
   updateLatex: (source: string) => void;
+  saveAndRefreshFromLatex: (source: string) => { success: boolean; errorCount: number };
   createNewDoc: (templateId?: TemplateId, title?: string) => string;
   duplicateDoc: (id: string) => string;
   deleteDoc: (id: string) => void;
@@ -168,6 +170,43 @@ export const CVProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     }));
   }, [updateDoc]);
 
+  const saveAndRefreshFromLatex = useCallback((source: string) => {
+    // 1. Basic syntax checks
+    const hasBeginDoc = source.includes('\\begin{document}');
+    const hasEndDoc = source.includes('\\end{document}');
+
+    if (!hasBeginDoc || !hasEndDoc) {
+      // Still persist source so edits are not lost
+      updateDoc(prev => ({
+        ...prev,
+        latexSource: source,
+        isCustomLatex: true
+      }));
+      return { success: false, errorCount: 1 };
+    }
+
+    // 2. Parse LaTeX source back into structured CVDocument model
+    const parsedDoc = parseLatexSource(source, currentDoc);
+
+    // 3. Immediately persist to documents state and localStorage
+    setDocuments(prevDocs => {
+      const idx = prevDocs.findIndex(d => d.id === activeDocId);
+      if (idx === -1) return prevDocs;
+      const nextDocs = [...prevDocs];
+      nextDocs[idx] = parsedDoc;
+      try {
+        localStorage.setItem(STORAGE_KEY_DOCS, JSON.stringify(nextDocs));
+        localStorage.setItem(STORAGE_KEY_ACTIVE, activeDocId);
+      } catch (e) {
+        console.warn('LocalStorage save error:', e);
+      }
+      return nextDocs;
+    });
+
+    setSaveStatus('saved');
+    return { success: true, errorCount: 0 };
+  }, [currentDoc, activeDocId, updateDoc]);
+
   const undo = useCallback(() => {
     if (history.length === 0) return;
     const previous = history[history.length - 1];
@@ -304,6 +343,7 @@ export const CVProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         updateSettings,
         setTemplate,
         updateLatex,
+        saveAndRefreshFromLatex,
         createNewDoc,
         duplicateDoc,
         deleteDoc,
