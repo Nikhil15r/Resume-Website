@@ -32,7 +32,7 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
   targetMode = 'new'
 }) => {
   const navigate = useNavigate();
-  const { updateDoc, currentDoc, createNewDoc } = useCV();
+  const { updateDoc, createNewDoc } = useCV();
 
   const [activeTab, setActiveTab] = useState<'upload' | 'paste'>('upload');
   const [pastedText, setPastedText] = useState('');
@@ -109,12 +109,24 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
     if (!parsedResult) return;
     const doc = parsedResult.document;
     
-    // Create new document in context and populate it
-    const newId = createNewDoc(doc.settings.templateId, doc.title);
-    updateDoc(() => ({
-      ...doc,
-      id: newId
-    }));
+    // Create new document populated with parsed content directly
+    // Pass the parsed document fields as initialContent so the new doc
+    // is created with parsed data instead of template mock data
+    const newId = createNewDoc(
+      doc.settings.templateId,
+      doc.title || 'Imported Resume',
+      {
+        personalInfo: doc.personalInfo,
+        summary: doc.summary,
+        experience: doc.experience,
+        education: doc.education,
+        skills: doc.skills,
+        projects: doc.projects,
+        certifications: doc.certifications,
+        publications: doc.publications,
+        awards: doc.awards
+      }
+    );
 
     onClose();
     navigate(`/editor/${newId}`);
@@ -133,6 +145,8 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
       skills: doc.skills.length > 0 ? doc.skills : prev.skills,
       projects: doc.projects.length > 0 ? doc.projects : prev.projects,
       certifications: doc.certifications.length > 0 ? doc.certifications : prev.certifications,
+      publications: doc.publications && doc.publications.length > 0 ? doc.publications : prev.publications,
+      awards: doc.awards && doc.awards.length > 0 ? doc.awards : prev.awards,
       lastModified: new Date().toISOString()
     }));
 

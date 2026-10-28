@@ -21,7 +21,7 @@ interface CVContextType {
   setTemplate: (templateId: TemplateId) => void;
   updateLatex: (source: string) => void;
   saveAndRefreshFromLatex: (source: string) => { success: boolean; errorCount: number };
-  createNewDoc: (templateId?: TemplateId, title?: string) => string;
+  createNewDoc: (templateId?: TemplateId, title?: string, initialContent?: Partial<CVDocument>) => string;
   duplicateDoc: (id: string) => string;
   deleteDoc: (id: string) => void;
   undo: () => void;
@@ -239,22 +239,24 @@ export const CVProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     });
   }, [future, currentDoc, activeDocId]);
 
-  const createNewDoc = useCallback((templateId: TemplateId = 'corporate-classic', title = 'Executive Resume'): string => {
+  const createNewDoc = useCallback((templateId: TemplateId = 'corporate-classic', title = 'Executive Resume', initialContent?: Partial<CVDocument>): string => {
     const newId = `doc-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-    const newDoc: CVDocument = {
+    const baseDoc: CVDocument = {
       ...INITIAL_CV,
+      ...initialContent,
       id: newId,
-      title: `${title} (${new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })})`,
+      title: initialContent?.title || `${title} (${new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })})`,
       createdAt: new Date().toISOString(),
       lastModified: new Date().toISOString(),
       settings: {
         ...INITIAL_CV.settings,
+        ...(initialContent?.settings || {}),
         templateId
       }
     };
-    newDoc.latexSource = generateLatexSource(newDoc);
+    baseDoc.latexSource = generateLatexSource(baseDoc);
 
-    setDocuments(prev => [newDoc, ...prev]);
+    setDocuments(prev => [baseDoc, ...prev]);
     setActiveDocId(newId);
     setHistory([]);
     setFuture([]);
