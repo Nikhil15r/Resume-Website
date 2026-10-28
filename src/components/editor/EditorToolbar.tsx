@@ -12,11 +12,13 @@ import {
   ChevronDown, 
   ZoomIn, 
   ZoomOut, 
-  Maximize2,
-  Sparkles,
-  Archive,
-  ArrowLeft,
-  RefreshCw
+  Maximize2, 
+  Sparkles, 
+  Archive, 
+  ArrowLeft, 
+  RefreshCw,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 import { useCV } from '../../context/CVContext';
 import { TEMPLATES } from '../../data/templates';
@@ -34,13 +36,21 @@ interface EditorToolbarProps {
   setZoom: (z: number) => void;
   activeMode: 'visual' | 'latex' | 'preview';
   setActiveMode: (mode: 'visual' | 'latex' | 'preview') => void;
+  sidebarCollapsed?: boolean;
+  onToggleSidebar?: () => void;
+  previewCollapsed?: boolean;
+  onTogglePreview?: () => void;
 }
 
 export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   zoom,
   setZoom,
   activeMode,
-  setActiveMode
+  setActiveMode,
+  sidebarCollapsed,
+  onToggleSidebar,
+  previewCollapsed,
+  onTogglePreview
 }) => {
   const { 
     currentDoc, 
@@ -90,6 +100,22 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
         >
           <ArrowLeft className="w-4 h-4" />
         </Link>
+
+        {/* Toggle Document Sections Sidebar */}
+        {activeMode === 'visual' && onToggleSidebar && (
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            className={`hidden md:flex p-1.5 rounded-sm transition-colors ${
+              sidebarCollapsed
+                ? 'text-[#8C8172] bg-[#EFEEEA] hover:bg-[#E5E3DF]'
+                : 'text-[#807D7A] hover:text-[#0A0A0A] hover:bg-[#EFEEEA]'
+            }`}
+            title={sidebarCollapsed ? "Expand Document Sections" : "Collapse Document Sections"}
+          >
+            {sidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+          </button>
+        )}
 
         {/* Editable Title */}
         <div className="flex items-center gap-2">
@@ -263,6 +289,23 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
             <Maximize2 className="w-3 h-3" />
           </button>
         </div>
+
+        {/* Toggle Live Preview (Visual mode) */}
+        {activeMode === 'visual' && onTogglePreview && (
+          <button
+            type="button"
+            onClick={onTogglePreview}
+            className={`hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-sm text-xs border transition-colors ${
+              previewCollapsed
+                ? 'text-[#4A4845] bg-[#F5F5F3] border-[#E5E3DF] hover:bg-[#EFEEEA]'
+                : 'text-[#8C8172] bg-[#EFEEEA] border-[#D1CECA] font-medium'
+            }`}
+            title={previewCollapsed ? "Show Live Document Preview" : "Hide Live Preview (Focus Mode)"}
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span className="font-mono text-[11px]">{previewCollapsed ? 'Show Preview' : 'Split View'}</span>
+          </button>
+        )}
 
         {/* Primary Export Button & Dropdown */}
         <div className="relative">
