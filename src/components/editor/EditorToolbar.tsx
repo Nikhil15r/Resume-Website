@@ -18,7 +18,8 @@ import {
   ArrowLeft, 
   RefreshCw,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  Upload
 } from 'lucide-react';
 import { useCV } from '../../context/CVContext';
 import { TEMPLATES } from '../../data/templates';
@@ -30,6 +31,7 @@ import {
   exportLatexProjectZip, 
   downloadJsonBackup 
 } from '../../utils/exportUtils';
+import { ResumeParserModal } from '../parser/ResumeParserModal';
 
 interface EditorToolbarProps {
   zoom: number;
@@ -68,6 +70,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   const [templateDropdownOpen, setTemplateDropdownOpen] = useState(false);
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [isParserModalOpen, setIsParserModalOpen] = useState(false);
 
   const handleTitleSubmit = () => {
     setIsEditingTitle(false);
@@ -258,6 +261,17 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
             </div>
           )}
         </div>
+
+        {/* Import & Parse CV Button */}
+        <button
+          type="button"
+          onClick={() => setIsParserModalOpen(true)}
+          className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono text-[#4A4845] hover:text-[#0A0A0A] bg-white border border-[#E5E3DF] hover:bg-[#EFEEEA] rounded-sm transition-colors shadow-2xs"
+          title="Import and parse an external PDF, Word docx, LaTeX, or raw text resume"
+        >
+          <Upload className="w-3.5 h-3.5 text-[#8C8172]" />
+          <span>Import CV</span>
+        </button>
       </div>
 
       {/* 3. Right Group: Zoom & Export Controls */}
@@ -393,10 +407,30 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
                   <div className="text-[10px] text-[#807D7A]">Full structured data</div>
                 </div>
               </button>
+
+              <div className="border-t border-[#E5E3DF] my-1"></div>
+
+              <button
+                onClick={() => setIsParserModalOpen(true)}
+                className="w-full px-3 py-2 text-left hover:bg-[#EFEEEA] flex items-center gap-2 text-[#0A0A0A]"
+              >
+                <Upload className="w-3.5 h-3.5 text-[#8C8172]" />
+                <div>
+                  <div className="font-medium">Import &amp; Parse CV</div>
+                  <div className="text-[10px] text-[#807D7A]">PDF, Word, LaTeX or raw text</div>
+                </div>
+              </button>
             </div>
           )}
         </div>
       </div>
+
+      {/* Resume Parser Modal */}
+      <ResumeParserModal
+        isOpen={isParserModalOpen}
+        onClose={() => setIsParserModalOpen(false)}
+        targetMode="current"
+      />
     </header>
   );
 };

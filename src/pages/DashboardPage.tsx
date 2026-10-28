@@ -15,13 +15,15 @@ import {
   Sparkles,
   SlidersHorizontal,
   Mail,
-  Settings
+  Settings,
+  Upload
 } from 'lucide-react';
 import { useCV } from '../context/CVContext';
 import { TEMPLATES } from '../data/templates';
 import { TemplateId } from '../types/cv';
 import { exportToPdfPrint, downloadPdfDirect } from '../utils/exportUtils';
 import { CVDocumentRenderer } from '../components/preview/CVDocumentRenderer';
+import { ResumeParserModal } from '../components/parser/ResumeParserModal';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -37,6 +39,7 @@ export const DashboardPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [menuOpenDocId, setMenuOpenDocId] = useState<string | null>(null);
+  const [isParserModalOpen, setIsParserModalOpen] = useState(false);
 
   // Filter documents
   const filteredDocs = documents.filter(doc => {
@@ -90,14 +93,24 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick Create CTA */}
-          <button
-            onClick={() => handleCreateNew()}
-            className="w-full py-2.5 px-3 bg-[#0A0A0A] hover:bg-[#8C8172] text-[#F5F5F3] text-xs uppercase tracking-[0.14em] font-medium rounded-sm transition-luxury flex items-center justify-center gap-2 shadow-subtle"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Create New CV</span>
-          </button>
+          {/* Quick Create CTA & Parse CTA */}
+          <div className="space-y-2">
+            <button
+              onClick={() => handleCreateNew()}
+              className="w-full py-2.5 px-3 bg-[#0A0A0A] hover:bg-[#8C8172] text-[#F5F5F3] text-xs uppercase tracking-[0.14em] font-medium rounded-sm transition-luxury flex items-center justify-center gap-2 shadow-subtle"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create New CV</span>
+            </button>
+            <button
+              onClick={() => setIsParserModalOpen(true)}
+              className="w-full py-2 px-3 bg-white hover:bg-[#F5F5F3] text-[#0A0A0A] border border-[#D1CECA] text-xs uppercase tracking-[0.12em] font-medium rounded-sm transition-colors flex items-center justify-center gap-2 shadow-sm"
+              title="Parse an existing PDF, Word, LaTeX, or raw text resume"
+            >
+              <Upload className="w-3.5 h-3.5 text-[#8C8172]" />
+              <span>Import / Parse CV</span>
+            </button>
+          </div>
 
           {/* Navigation Items */}
           <nav className="space-y-1 text-xs">
@@ -211,6 +224,14 @@ export const DashboardPage: React.FC = () => {
             </div>
 
             <button
+              onClick={() => setIsParserModalOpen(true)}
+              className="px-3.5 py-2 bg-white hover:bg-[#EFEEEA] border border-[#D1CECA] text-[#0A0A0A] text-xs uppercase tracking-[0.12em] font-medium rounded-sm transition-colors flex items-center gap-2 shadow-subtle shrink-0"
+            >
+              <Upload className="w-3.5 h-3.5 text-[#8C8172]" />
+              <span>Import &amp; Parse</span>
+            </button>
+
+            <button
               onClick={() => handleCreateNew()}
               className="px-4 py-2 bg-[#0A0A0A] hover:bg-[#8C8172] text-[#F5F5F3] text-xs uppercase tracking-[0.12em] font-medium rounded-sm transition-luxury flex items-center gap-2 shadow-subtle shrink-0"
             >
@@ -219,6 +240,31 @@ export const DashboardPage: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Universal CV Parser Promo Banner (Overview tab) */}
+        {activeTab === 'overview' && (
+          <div className="mb-10 p-6 bg-gradient-to-r from-[#141414] via-[#1C1A18] to-[#262421] rounded-sm text-white border border-[#333] shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-1.5 max-w-xl">
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-[#8C8172]/30 text-[#D1CECA] border border-[#8C8172]/40">
+                <Sparkles className="w-3 h-3 text-[#8C8172]" />
+                Universal CV Parser
+              </div>
+              <h3 className="font-serif text-xl sm:text-2xl font-normal text-white">
+                Have an existing resume? Import it in seconds.
+              </h3>
+              <p className="text-xs text-[#807D7A] leading-relaxed">
+                Accepts PDF, Word (.docx), LaTeX (.tex), JSONResume, or direct text paste. Automatically extracts leadership mandates, career history, education, skills, and metrics.
+              </p>
+            </div>
+            <button
+              onClick={() => setIsParserModalOpen(true)}
+              className="px-5 py-3 bg-[#8C8172] hover:bg-[#786E60] text-white text-xs font-mono uppercase tracking-widest font-semibold rounded-sm shadow-md shrink-0 flex items-center gap-2 transition-all"
+            >
+              <Upload className="w-4 h-4" />
+              <span>Upload &amp; Parse Resume</span>
+            </button>
+          </div>
+        )}
 
         {/* Recent Documents Section */}
         <section className="mb-14">
@@ -411,6 +457,13 @@ export const DashboardPage: React.FC = () => {
           </div>
         </section>
       </main>
+
+      {/* Universal Resume / CV Parser Modal */}
+      <ResumeParserModal 
+        isOpen={isParserModalOpen} 
+        onClose={() => setIsParserModalOpen(false)} 
+        targetMode="new" 
+      />
     </div>
   );
 };

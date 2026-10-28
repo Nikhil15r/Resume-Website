@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, FileText, Code2, CheckCircle2, Sliders, ShieldCheck, Download, Sparkles, BookOpen } from 'lucide-react';
+import { ArrowRight, FileText, Code2, CheckCircle2, Sliders, ShieldCheck, Download, Sparkles, BookOpen, Upload } from 'lucide-react';
 import { useCV } from '../context/CVContext';
 import { TEMPLATES } from '../data/templates';
 import { CVDocumentRenderer } from '../components/preview/CVDocumentRenderer';
 import { TemplateId } from '../types/cv';
+import { ResumeParserModal } from '../components/parser/ResumeParserModal';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { currentDoc, createNewDoc, setTemplate } = useCV();
   const [selectedPreviewTemplate, setSelectedPreviewTemplate] = useState<TemplateId>('corporate-classic');
   const [previewZoom, setPreviewZoom] = useState<number>(0.72);
+  const [isParserOpen, setIsParserOpen] = useState(false);
 
   // Document clone for the live interactive hero preview
   const previewDoc = {
@@ -50,7 +52,7 @@ export const LandingPage: React.FC = () => {
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5">
               <button
                 onClick={() => handleCreateNew('corporate-classic')}
                 className="w-full sm:w-auto px-7 py-3.5 bg-[#0A0A0A] hover:bg-[#8C8172] text-[#F5F5F3] text-xs uppercase tracking-[0.14em] font-medium rounded-sm transition-luxury shadow-subtle flex items-center justify-center gap-2 group"
@@ -58,9 +60,19 @@ export const LandingPage: React.FC = () => {
                 <span>Create Your CV</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
+
+              <button
+                onClick={() => setIsParserOpen(true)}
+                className="w-full sm:w-auto px-6 py-3.5 bg-white hover:bg-[#EFEEEA] text-[#0A0A0A] text-xs uppercase tracking-[0.14em] font-medium rounded-sm border border-[#D1CECA] transition-luxury flex items-center justify-center gap-2 shadow-2xs"
+                title="Upload or paste any existing resume to parse"
+              >
+                <Upload className="w-4 h-4 text-[#8C8172]" />
+                <span>Import / Parse CV</span>
+              </button>
+
               <Link
                 to="/templates"
-                className="w-full sm:w-auto px-7 py-3.5 bg-[#EFEEEA] hover:bg-[#E5E3DF] text-[#0A0A0A] text-xs uppercase tracking-[0.14em] font-medium rounded-sm border border-[#E5E3DF] transition-luxury flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-3.5 bg-[#EFEEEA] hover:bg-[#E5E3DF] text-[#0A0A0A] text-xs uppercase tracking-[0.14em] font-medium rounded-sm border border-[#E5E3DF] transition-luxury flex items-center justify-center gap-2"
               >
                 <span>Explore Templates</span>
               </Link>
@@ -342,6 +354,13 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* Universal Resume Parser Modal */}
+      <ResumeParserModal
+        isOpen={isParserOpen}
+        onClose={() => setIsParserOpen(false)}
+        targetMode="new"
+      />
     </div>
   );
 };
