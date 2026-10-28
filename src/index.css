@@ -66,11 +66,25 @@
   .cv-page-sheet {
     box-shadow: none !important;
     border: none !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
     width: 210mm !important;
-    height: 297mm !important;
+    min-height: 297mm !important;
     page-break-after: always !important;
     break-after: page !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+  }
+
+  .cv-page-sheet:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  section,
+  .cv-entry-item,
+  .cv-section-block {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   @page {

@@ -19,7 +19,8 @@ import {
   RefreshCw,
   PanelLeftClose,
   PanelLeftOpen,
-  Upload
+  Upload,
+  ShieldCheck
 } from 'lucide-react';
 import { useCV } from '../../context/CVContext';
 import { TEMPLATES } from '../../data/templates';
@@ -32,6 +33,7 @@ import {
   downloadJsonBackup 
 } from '../../utils/exportUtils';
 import { ResumeParserModal } from '../parser/ResumeParserModal';
+import { ATSHealthCheckModal } from './ATSHealthCheckModal';
 
 interface EditorToolbarProps {
   zoom: number;
@@ -71,6 +73,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isParserModalOpen, setIsParserModalOpen] = useState(false);
+  const [isAtsModalOpen, setIsAtsModalOpen] = useState(false);
 
   const handleTitleSubmit = () => {
     setIsEditingTitle(false);
@@ -272,6 +275,17 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
           <Upload className="w-3.5 h-3.5 text-[#8C8172]" />
           <span>Import CV</span>
         </button>
+
+        {/* Real-time ATS Health Check Audit Button */}
+        <button
+          type="button"
+          onClick={() => setIsAtsModalOpen(true)}
+          className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono text-[#4A4845] hover:text-[#0A0A0A] bg-white border border-[#E5E3DF] hover:bg-[#EFEEEA] rounded-sm transition-colors shadow-2xs"
+          title="Audit resume for ATS keyword parsers, contact data, and quantifiable metrics"
+        >
+          <ShieldCheck className="w-3.5 h-3.5 text-[#8C8172]" />
+          <span>ATS Audit</span>
+        </button>
       </div>
 
       {/* 3. Right Group: Zoom & Export Controls */}
@@ -368,8 +382,8 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
               >
                 <Printer className="w-3.5 h-3.5 text-[#8C8172]" />
                 <div>
-                  <div className="font-medium">Print / Browser PDF Dialog</div>
-                  <div className="text-[10px] text-[#807D7A]">Uses system print engine</div>
+                  <div className="font-medium">Print / Vector PDF (Recommended)</div>
+                  <div className="text-[10px] text-[#807D7A]">100% selectable text via browser PDF</div>
                 </div>
               </button>
 
@@ -430,6 +444,13 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
         isOpen={isParserModalOpen}
         onClose={() => setIsParserModalOpen(false)}
         targetMode="current"
+      />
+
+      {/* Real-Time ATS Health Check Modal */}
+      <ATSHealthCheckModal
+        isOpen={isAtsModalOpen}
+        onClose={() => setIsAtsModalOpen(false)}
+        doc={currentDoc}
       />
     </header>
   );

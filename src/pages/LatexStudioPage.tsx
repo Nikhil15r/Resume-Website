@@ -42,7 +42,7 @@ export const LatexStudioPage: React.FC = () => {
               ATELIER LATEX STUDIO
             </span>
             <span className="text-[10px] font-mono text-[#8C8172] bg-[#222] px-2 py-0.5 rounded-sm">
-              v3.14 TeX Engine
+              LaTeX AST &amp; Source Sync
             </span>
           </div>
 
@@ -116,7 +116,7 @@ export const LatexStudioPage: React.FC = () => {
             ) : (
               <Download className="w-3.5 h-3.5" />
             )}
-            <span>{isDownloadingPdf ? 'Compiling PDF...' : 'Download PDF'}</span>
+            <span>{isDownloadingPdf ? 'Exporting PDF...' : 'Download PDF'}</span>
           </button>
         </div>
       </header>

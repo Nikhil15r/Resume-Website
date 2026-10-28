@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
-  Play, 
   Download, 
   Archive, 
   Terminal, 
@@ -10,7 +9,9 @@ import {
   FileCode,
   Copy,
   Check,
-  Sparkles
+  Sparkles,
+  ExternalLink,
+  RotateCw
 } from 'lucide-react';
 import { useCV } from '../../context/CVContext';
 import { generateLatexSource } from '../../utils/latexGenerator';
@@ -22,9 +23,9 @@ export const LaTeXEditor: React.FC = () => {
   // Use either custom LaTeX or generate from current document
   const initialSource = currentDoc.latexSource || generateLatexSource(currentDoc);
   const [sourceCode, setSourceCode] = useState<string>(initialSource);
-  const [compiling, setCompiling] = useState<boolean>(false);
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [logs, setLogs] = useState<string[]>([]);
-  const [compilationSuccess, setCompilationSuccess] = useState<boolean | null>(null);
+  const [validationSuccess, setValidationSuccess] = useState<boolean | null>(null);
   const [showLogs, setShowLogs] = useState<boolean>(true);
   const [copied, setCopied] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -52,38 +53,73 @@ export const LaTeXEditor: React.FC = () => {
     }, 3200);
   };
 
-  const executeSaveAndCompile = useCallback(() => {
-    setCompiling(true);
-    setLogs([
-      `[ATELIER-TEX ${new Date().toLocaleTimeString()}] Parsing TeX source with pdfTeX 3.14159...`,
-      'Analyzing preamble: geometry, charter, titlesec, enumitem, xcolor, hyperref...'
-    ]);
+  /**
+   * Real syntax validation and bi-directional AST synchronization
+   */
+  const executeSyncAndRefresh = useCallback(() => {
+    setIsSyncing(true);
+    const newLogs: string[] = [];
+    const timestamp = new Date().toLocaleTimeString();
 
-    setTimeout(() => {
-      const result = saveAndRefreshFromLatex(sourceCode);
+    newLogs.push(`[${timestamp}] Validating LaTeX syntax & document structure...`);
 
-      if (!result.success) {
-        setLogs(prev => [
-          ...prev,
-          '! LaTeX Error: Missing \\begin{document} or \\end{document}',
-          '1 error found during pass 1. Document view preserved.'
-        ]);
-        setCompilationSuccess(false);
-        showToast('Error: Missing \\begin{document} or \\end{document}');
-      } else {
-        const timeMs = Math.floor(Math.random() * 50) + 95;
-        setLogs(prev => [
-          ...prev,
-          'Parsed sections: Header, Summary, Experience, Education, Skills, Projects.',
-          'Shipout: Output written on main.pdf (A4 Vector format).',
-          `Success: Compilation finished cleanly in ${timeMs}ms with 0 errors.`,
-          'CV Preview refreshed and synchronized.'
-        ]);
-        setCompilationSuccess(true);
-        showToast('Saved & View Refreshed');
+    // 1. Check for basic document environment
+    const hasBeginDoc = sourceCode.includes('\\begin{document}');
+    const hasEndDoc = sourceCode.includes('\\end{document}');
+
+    if (!hasBeginDoc || !hasEndDoc) {
+      newLogs.push('! Error: Document must contain \\begin{document} and \\end{document}.');
+      setLogs(newLogs);
+      setValidationSuccess(false);
+      showToast('Error: Missing \\begin{document} or \\end{document}');
+      setIsSyncing(false);
+      return;
+    }
+
+    // 2. Check balanced curly braces
+    let braceCount = 0;
+    let braceError = false;
+    for (let i = 0; i < sourceCode.length; i++) {
+      if (sourceCode[i] === '{' && (i === 0 || sourceCode[i - 1] !== '\\')) {
+        braceCount++;
+      } else if (sourceCode[i] === '}' && (i === 0 || sourceCode[i - 1] !== '\\')) {
+        braceCount--;
+        if (braceCount < 0) {
+          braceError = true;
+          break;
+        }
       }
-      setCompiling(false);
-    }, 200);
+    }
+    if (braceCount !== 0 || braceError) {
+      newLogs.push('! Warning: Unbalanced curly braces detected. Check your nested commands.');
+    } else {
+      newLogs.push('✓ Valid syntax: All opening and closing curly braces are balanced.');
+    }
+
+    // 3. Check environment pairings
+    const beginEnvs = (sourceCode.match(/\\begin\{([a-zA-Z*]+)\}/g) || []).map(s => s.replace(/\\begin\{|\}/g, ''));
+    const endEnvs = (sourceCode.match(/\\end\{([a-zA-Z*]+)\}/g) || []).map(s => s.replace(/\\end\{|\}/g, ''));
+    
+    if (beginEnvs.length === endEnvs.length) {
+      newLogs.push(`✓ Balanced environments: ${beginEnvs.length} environments detected (${beginEnvs.slice(0, 3).join(', ')}...).`);
+    } else {
+      newLogs.push(`! Warning: Environment mismatch (${beginEnvs.length} \\begin vs ${endEnvs.length} \\end).`);
+    }
+
+    // 4. Synchronize with Visual CV Document
+    const syncResult = saveAndRefreshFromLatex(sourceCode);
+    if (syncResult.success) {
+      newLogs.push('✓ Bi-directional sync: Updated Visual CV model and refreshed document view.');
+      newLogs.push('✓ Document ready for Overleaf / TeX Live compilation.');
+      setValidationSuccess(true);
+      showToast('LaTeX Synced & View Refreshed');
+    } else {
+      newLogs.push('! Warning: Parser encountered partial section tokens. Preview preserved.');
+      setValidationSuccess(false);
+    }
+
+    setLogs(newLogs);
+    setIsSyncing(false);
   }, [sourceCode, saveAndRefreshFromLatex]);
 
   // Global Ctrl + S / Cmd + S listener for the LaTeX editor
@@ -91,13 +127,13 @@ export const LaTeXEditor: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
-        executeSaveAndCompile();
+        executeSyncAndRefresh();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [executeSaveAndCompile]);
+  }, [executeSyncAndRefresh]);
 
   const handleResetToGenerated = () => {
     if (window.confirm('Reset LaTeX source to match current visual editor fields? Any manual edits will be overwritten.')) {
@@ -115,13 +151,39 @@ export const LaTeXEditor: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  /**
+   * Opens the LaTeX code directly in Overleaf for real cloud pdflatex/xelatex compilation
+   */
+  const handleOpenInOverleaf = () => {
+    try {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = 'https://www.overleaf.com/docs';
+      form.target = '_blank';
+
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'snip';
+      input.value = sourceCode;
+
+      form.appendChild(input);
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
+      showToast('Opening in Overleaf...');
+    } catch (e) {
+      console.error('Overleaf export error:', e);
+      window.open('https://www.overleaf.com', '_blank');
+    }
+  };
+
   // Line numbering
   const lineCount = sourceCode.split('\n').length;
   const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1);
 
   return (
     <div className="flex flex-col h-full bg-[#0A0A0A] text-[#F5F5F3] rounded-sm overflow-hidden border border-[#222] relative">
-      {/* Save & Compile Toast Notification */}
+      {/* Save & Sync Toast Notification */}
       {toastMessage && (
         <div className="absolute top-12 right-6 z-50 bg-[#1A1A1A] text-white border border-[#8C8172] px-3.5 py-2 rounded shadow-2xl flex items-center gap-2 text-xs font-mono animate-in fade-in slide-in-from-top-2 duration-150">
           <Sparkles className="w-3.5 h-3.5 text-[#8C8172]" />
@@ -168,6 +230,16 @@ export const LaTeXEditor: React.FC = () => {
 
           <button
             type="button"
+            onClick={handleOpenInOverleaf}
+            className="px-2.5 py-1 text-xs font-mono text-[#EFEEEA] bg-[#222] hover:bg-[#8C8172] rounded-sm transition-colors flex items-center gap-1.5 border border-[#333]"
+            title="Open and compile with real pdflatex in Overleaf"
+          >
+            <ExternalLink className="w-3.5 h-3.5 text-[#8C8172]" />
+            <span>Open in Overleaf</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => downloadLatexSource(currentDoc)}
             className="px-2.5 py-1 text-xs font-mono text-[#807D7A] hover:text-white bg-[#1A1A1A] hover:bg-[#2A2A2A] rounded-sm transition-colors flex items-center gap-1"
             title="Download .tex File"
@@ -183,18 +255,18 @@ export const LaTeXEditor: React.FC = () => {
             title="Download Project ZIP"
           >
             <Archive className="w-3.5 h-3.5" />
-            <span>Project ZIP</span>
+            <span>ZIP</span>
           </button>
 
           <button
             type="button"
-            onClick={executeSaveAndCompile}
-            disabled={compiling}
-            title="Compile TeX & Refresh CV View (Ctrl+S)"
+            onClick={executeSyncAndRefresh}
+            disabled={isSyncing}
+            title="Save & Synchronize Preview (Ctrl+S)"
             className="px-3.5 py-1 bg-[#8C8172] hover:bg-[#786E60] text-white text-xs font-mono font-medium rounded-sm transition-colors flex items-center gap-1.5 shadow-sm disabled:opacity-50"
           >
-            <Play className={`w-3.5 h-3.5 fill-current ${compiling ? 'animate-spin' : ''}`} />
-            <span>{compiling ? 'Compiling...' : 'Compile TeX'}</span>
+            <RotateCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+            <span>{isSyncing ? 'Syncing...' : 'Sync & Save'}</span>
             <span className="hidden sm:inline-block text-[9px] bg-black/30 px-1 py-0.5 rounded text-[#EFEEEA]/80 font-mono">
               Ctrl+S
             </span>
@@ -222,20 +294,20 @@ export const LaTeXEditor: React.FC = () => {
         />
       </div>
 
-      {/* Compilation Diagnostic Logs Panel */}
+      {/* Compilation & Synchronization Diagnostic Console */}
       <div className="border-t border-[#262626] bg-[#121212]">
         <div className="flex items-center justify-between px-4 py-1.5 border-b border-[#222] text-[11px] font-mono">
           <div className="flex items-center gap-2">
             <Terminal className="w-3.5 h-3.5 text-[#8C8172]" />
-            <span className="text-[#807D7A]">TeX Diagnostic Console</span>
-            {compilationSuccess === true && (
+            <span className="text-[#807D7A]">LaTeX Linter &amp; Sync Diagnostics</span>
+            {validationSuccess === true && (
               <span className="text-emerald-500 flex items-center gap-1 text-[10px]">
-                <CheckCircle className="w-3 h-3" /> 0 Errors
+                <CheckCircle className="w-3 h-3" /> Syntax Verified
               </span>
             )}
-            {compilationSuccess === false && (
-              <span className="text-red-400 flex items-center gap-1 text-[10px]">
-                <AlertCircle className="w-3 h-3" /> Build Error
+            {validationSuccess === false && (
+              <span className="text-amber-400 flex items-center gap-1 text-[10px]">
+                <AlertCircle className="w-3 h-3" /> Syntax Notice
               </span>
             )}
           </div>
@@ -245,22 +317,24 @@ export const LaTeXEditor: React.FC = () => {
             onClick={() => setShowLogs(!showLogs)}
             className="text-[10px] text-[#807D7A] hover:text-white"
           >
-            {showLogs ? 'Hide Console' : 'Show Console'}
+            {showLogs ? 'Hide Diagnostics' : 'Show Diagnostics'}
           </button>
         </div>
 
         {showLogs && (
           <div className="p-3 max-h-36 overflow-y-auto font-mono text-[11px] text-[#807D7A] space-y-1">
             {logs.length === 0 ? (
-              <div className="text-[#555] italic">Ready. Click &quot;Compile TeX&quot; to build vector PDF output.</div>
+              <div className="text-[#555] italic">
+                Ready. Press <strong className="text-[#8C8172]">Ctrl + S</strong> or click &quot;Sync &amp; Save&quot; to validate code and refresh the CV preview. Click &quot;Open in Overleaf&quot; for full cloud pdflatex compilation.
+              </div>
             ) : (
               logs.map((log, idx) => (
                 <div
                   key={idx}
                   className={
-                    log.includes('Error')
-                      ? 'text-red-400 font-medium'
-                      : log.includes('Success')
+                    log.includes('!')
+                      ? 'text-amber-400 font-medium'
+                      : log.includes('✓')
                       ? 'text-emerald-400'
                       : 'text-[#999]'
                   }

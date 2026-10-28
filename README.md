@@ -1,6 +1,6 @@
 # Atelier CV Studio 🖋️
 
-> An editorial-grade, minimalist CV and resume creation platform engineered for corporate and multinational-company applications. Built with React, TypeScript, Tailwind CSS, and LaTeX integration.
+> An editorial-grade, minimalist CV and resume creation platform engineered for professionals — developers, engineers, researchers, designers, and executives alike. Built with React, TypeScript, Tailwind CSS, and LaTeX integration.
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/Nikhil15r/Resume-Website)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue)](https://www.typescriptlang.org/)
@@ -30,6 +30,15 @@
 - **High-Fidelity PDF Export**:
   - Direct PDF downloads with exact styling, correct margins, and zero watermarks or website tags.
   - Automatic page-break management ensuring section headings and dividers stay intact.
+  - "Print / Vector PDF (Recommended)" option for 100% selectable text via browser print engine.
+- **Real-Time ATS Health Check**:
+  - Diagnostic audit modal scoring Contact, Summary, Work History, Quantifiable Metrics, Skills, and Education.
+  - Actionable recommendations for improving ATS compatibility.
+- **Workspace Backup & Restore**:
+  - Full workspace JSON export/import for cross-browser and cross-device portability.
+  - Storage metrics and privacy notice in Dashboard Settings.
+- **1-Click Overleaf Integration**:
+  - Open your LaTeX source directly in Overleaf for cloud compilation.
 - **Multi-Document Management**:
   - Create, clone, customize, and store multiple CVs in local workspace storage.
 

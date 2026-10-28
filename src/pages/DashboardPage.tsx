@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Plus, 
@@ -32,7 +32,10 @@ export const DashboardPage: React.FC = () => {
     createNewDoc, 
     duplicateDoc, 
     deleteDoc, 
-    setCurrentDocId 
+    setCurrentDocId,
+    exportWorkspaceBackup,
+    importWorkspaceBackup,
+    resetToDefault
   } = useCV();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'my-cvs' | 'templates' | 'latex' | 'cover-letters' | 'settings'>('overview');
@@ -40,6 +43,26 @@ export const DashboardPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [menuOpenDocId, setMenuOpenDocId] = useState<string | null>(null);
   const [isParserModalOpen, setIsParserModalOpen] = useState(false);
+  const [backupMessage, setBackupMessage] = useState<string | null>(null);
+  const backupInputRef = useRef<HTMLInputElement>(null);
+
+  const handleBackupFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const res = importWorkspaceBackup(text);
+      if (res.success) {
+        setBackupMessage(`Successfully restored ${res.count} documents from backup!`);
+      } else {
+        setBackupMessage(`Restore failed: ${res.error}`);
+      }
+    } catch {
+      setBackupMessage('Failed to read the selected backup file.');
+    }
+    if (backupInputRef.current) backupInputRef.current.value = '';
+    setTimeout(() => setBackupMessage(null), 4000);
+  };
 
   // Filter documents
   const filteredDocs = documents.filter(doc => {
@@ -88,7 +111,7 @@ export const DashboardPage: React.FC = () => {
                 ATELIER CV
               </div>
               <div className="text-[9px] uppercase tracking-widest text-[#807D7A]">
-                Executive Workspace
+                Professional Workspace
               </div>
             </div>
           </div>
@@ -266,7 +289,86 @@ export const DashboardPage: React.FC = () => {
           </div>
         )}
 
-        {/* Recent Documents Section */}
+        {activeTab === 'settings' ? (
+          /* Settings & Workspace Backup Dossier */
+          <section className="space-y-8 animate-in fade-in duration-150">
+            {backupMessage && (
+              <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-sm text-xs font-mono">
+                {backupMessage}
+              </div>
+            )}
+
+            <div className="bg-white border border-[#E5E3DF] rounded-sm p-6 sm:p-8 space-y-6">
+              <div>
+                <h2 className="font-serif text-2xl font-medium text-[#0A0A0A] mb-1">
+                  Workspace Storage &amp; Data Durability
+                </h2>
+                <p className="text-xs text-[#807D7A] leading-relaxed max-w-2xl">
+                  All CV documents, cover letters, and LaTeX code are stored privately inside your browser&apos;s offline localStorage. No personal data is sent to external databases.
+                </p>
+              </div>
+
+              {/* Metrics */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 bg-[#F5F5F3] border border-[#E5E3DF] rounded-sm">
+                  <div className="text-[10px] font-mono uppercase text-[#807D7A]">Stored Documents</div>
+                  <div className="font-serif text-2xl font-bold text-[#0A0A0A] mt-1">{documents.length}</div>
+                </div>
+                <div className="p-4 bg-[#F5F5F3] border border-[#E5E3DF] rounded-sm">
+                  <div className="text-[10px] font-mono uppercase text-[#807D7A]">Privacy Mode</div>
+                  <div className="font-serif text-2xl font-bold text-emerald-700 mt-1">100% Client-Side</div>
+                </div>
+                <div className="p-4 bg-[#F5F5F3] border border-[#E5E3DF] rounded-sm">
+                  <div className="text-[10px] font-mono uppercase text-[#807D7A]">Storage Engine</div>
+                  <div className="font-serif text-2xl font-bold text-[#8C8172] mt-1">HTML5 Offline</div>
+                </div>
+              </div>
+
+              {/* Backup & Restore Controls */}
+              <div className="pt-4 border-t border-[#E5E3DF] flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={exportWorkspaceBackup}
+                  className="px-5 py-2.5 bg-[#0A0A0A] hover:bg-[#8C8172] text-white text-xs font-mono uppercase tracking-wider font-medium rounded-sm transition-colors flex items-center gap-2 shadow-sm"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download Full Backup (.json)</span>
+                </button>
+
+                <input
+                  type="file"
+                  ref={backupInputRef}
+                  onChange={handleBackupFile}
+                  accept=".json,application/json"
+                  className="hidden"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => backupInputRef.current?.click()}
+                  className="px-5 py-2.5 bg-white hover:bg-[#EFEEEA] border border-[#D1CECA] text-[#0A0A0A] text-xs font-mono uppercase tracking-wider font-medium rounded-sm transition-colors flex items-center gap-2 shadow-2xs"
+                >
+                  <Upload className="w-4 h-4 text-[#8C8172]" />
+                  <span>Restore from Backup File</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm('Reset all documents to the initial demo state? Current CVs will be replaced.')) {
+                      resetToDefault();
+                    }
+                  }}
+                  className="px-4 py-2.5 text-xs font-mono uppercase tracking-wider text-red-600 hover:text-red-800 hover:bg-red-50 rounded-sm transition-colors ml-auto"
+                >
+                  Reset Workspace
+                </button>
+              </div>
+            </div>
+          </section>
+        ) : (
+          <>
+            {/* Recent Documents Section */}
         <section className="mb-14">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-serif text-2xl font-medium text-[#0A0A0A]">
@@ -456,7 +558,9 @@ export const DashboardPage: React.FC = () => {
             ))}
           </div>
         </section>
-      </main>
+      </>
+    )}
+  </main>
 
       {/* Universal Resume / CV Parser Modal */}
       <ResumeParserModal 

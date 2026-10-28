@@ -24,9 +24,8 @@ export const ModernProfessionalTemplate: React.FC<{ doc: CVDocument }> = ({ doc 
         className="cv-page-sheet relative bg-white text-[#0A0A0A] font-sans text-[9.5pt] leading-[1.5] tracking-[-0.01em] p-[40pt] border border-[#E5E3DF] shadow-paper hover:shadow-paper-lg transition-shadow text-left"
         style={{
           width: `${widthMm}mm`,
-          height: `${heightMm}mm`,
-          boxSizing: 'border-box',
-          overflow: 'hidden'
+          minHeight: `${heightMm}mm`,
+          boxSizing: 'border-box'
         }}
       >
         {/* Modern Header */}
@@ -106,23 +105,19 @@ export const ModernProfessionalTemplate: React.FC<{ doc: CVDocument }> = ({ doc 
             </div>
           </section>
         )}
-
-        <div className="absolute bottom-4 right-8 text-[8pt] text-[#807D7A] select-none">
-          Page 1 of 2
-        </div>
       </div>
 
       {/* -------------------- PAGE 2 -------------------- */}
-      <div
-        id="cv-page-2"
-        className="cv-page-sheet relative bg-white text-[#0A0A0A] font-sans text-[9.5pt] leading-[1.5] tracking-[-0.01em] p-[40pt] border border-[#E5E3DF] shadow-paper hover:shadow-paper-lg transition-shadow text-left"
-        style={{
-          width: `${widthMm}mm`,
-          height: `${heightMm}mm`,
-          boxSizing: 'border-box',
-          overflow: 'hidden'
-        }}
-      >
+      {(education.length > 0 || skills.length > 0 || projects.length > 0 || certifications.length > 0 || (publications && publications.length > 0)) && (
+        <div
+          id="cv-page-2"
+          className="cv-page-sheet relative bg-white text-[#0A0A0A] font-sans text-[9.5pt] leading-[1.5] tracking-[-0.01em] p-[40pt] border border-[#E5E3DF] shadow-paper hover:shadow-paper-lg transition-shadow text-left"
+          style={{
+            width: `${widthMm}mm`,
+            minHeight: `${heightMm}mm`,
+            boxSizing: 'border-box'
+          }}
+        >
         {/* Running Header */}
         <div className="flex justify-between items-baseline pb-2 mb-4 border-b border-[#E5E3DF] text-[8.5pt] text-[#807D7A]">
           <span className="font-semibold text-[#0A0A0A] tracking-tight">{personalInfo.fullName}</span>
@@ -220,10 +215,8 @@ export const ModernProfessionalTemplate: React.FC<{ doc: CVDocument }> = ({ doc 
           </section>
         )}
 
-        <div className="absolute bottom-4 right-8 text-[8pt] text-[#807D7A] select-none">
-          Page 2 of 2
         </div>
-      </div>
+      )}
     </div>
   );
 };

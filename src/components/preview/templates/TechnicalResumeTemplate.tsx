@@ -32,9 +32,8 @@ export const TechnicalResumeTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) 
         className="cv-page-sheet relative bg-white text-[#0A0A0A] font-sans text-[9pt] leading-[1.4] p-[38pt] border border-[#E5E3DF] shadow-paper hover:shadow-paper-lg transition-shadow text-left"
         style={{
           width: `${widthMm}mm`,
-          height: `${heightMm}mm`,
-          boxSizing: 'border-box',
-          overflow: 'hidden'
+          minHeight: `${heightMm}mm`,
+          boxSizing: 'border-box'
         }}
       >
         {/* Header */}
@@ -124,23 +123,19 @@ export const TechnicalResumeTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) 
             </div>
           </section>
         )}
-
-        <div className="absolute bottom-4 right-8 text-[8pt] font-mono text-[#807D7A] select-none">
-          Page 1 of 2
-        </div>
       </div>
 
       {/* -------------------- PAGE 2 -------------------- */}
-      <div
-        id="cv-page-2"
-        className="cv-page-sheet relative bg-white text-[#0A0A0A] font-sans text-[9pt] leading-[1.4] p-[38pt] border border-[#E5E3DF] shadow-paper hover:shadow-paper-lg transition-shadow text-left"
-        style={{
-          width: `${widthMm}mm`,
-          height: `${heightMm}mm`,
-          boxSizing: 'border-box',
-          overflow: 'hidden'
-        }}
-      >
+      {(education.length > 0 || skills.length > 0 || projects.length > 0 || certifications.length > 0) && (
+        <div
+          id="cv-page-2"
+          className="cv-page-sheet relative bg-white text-[#0A0A0A] font-sans text-[9pt] leading-[1.4] p-[38pt] border border-[#E5E3DF] shadow-paper hover:shadow-paper-lg transition-shadow text-left"
+          style={{
+            width: `${widthMm}mm`,
+            minHeight: `${heightMm}mm`,
+            boxSizing: 'border-box'
+          }}
+        >
         {/* Running Header */}
         <div className="flex justify-between items-baseline pb-2 mb-3.5 border-b border-[#0A0A0A] text-[8.5pt] font-mono text-[#666]">
           <span className="font-bold text-[#0A0A0A]">{personalInfo.fullName}</span>
@@ -218,10 +213,8 @@ export const TechnicalResumeTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) 
           </section>
         )}
 
-        <div className="absolute bottom-4 right-8 text-[8pt] font-mono text-[#807D7A] select-none">
-          Page 2 of 2
         </div>
-      </div>
+      )}
     </div>
   );
 };

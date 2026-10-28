@@ -29,6 +29,8 @@ interface CVContextType {
   resetToDefault: () => void;
   updateCoverLetter: (updater: (prev: CoverLetterDocument) => CoverLetterDocument) => void;
   createNewCoverLetter: (title?: string) => string;
+  exportWorkspaceBackup: () => void;
+  importWorkspaceBackup: (jsonString: string) => { success: boolean; count: number; error?: string };
 }
 
 const STORAGE_KEY_DOCS = 'atelier_cv_documents_v2';
@@ -325,6 +327,54 @@ export const CVProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     return newId;
   }, []);
 
+  const exportWorkspaceBackup = useCallback(() => {
+    const backupData = {
+      app: 'atelier-cv',
+      version: '2.0.0',
+      exportedAt: new Date().toISOString(),
+      documents,
+      coverLetters,
+      activeDocId
+    };
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json;charset=utf-8' });
+    const filename = `atelier_cv_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [documents, coverLetters, activeDocId]);
+
+  const importWorkspaceBackup = useCallback((jsonString: string) => {
+    try {
+      const data = JSON.parse(jsonString);
+      if (!data || (!data.documents && !Array.isArray(data))) {
+        return { success: false, count: 0, error: 'Invalid backup format. Expected a JSON file with documents.' };
+      }
+      const importedDocs: CVDocument[] = Array.isArray(data) ? data : (data.documents || []);
+      const importedCls: CoverLetterDocument[] = data.coverLetters || [];
+
+      if (importedDocs.length === 0) {
+        return { success: false, count: 0, error: 'No CV documents found in backup file.' };
+      }
+
+      setDocuments(importedDocs);
+      if (importedCls.length > 0) setCoverLetters(importedCls);
+      if (importedDocs[0]?.id) setActiveDocId(importedDocs[0].id);
+
+      localStorage.setItem(STORAGE_KEY_DOCS, JSON.stringify(importedDocs));
+      if (importedCls.length > 0) localStorage.setItem(STORAGE_KEY_CLS, JSON.stringify(importedCls));
+      if (importedDocs[0]?.id) localStorage.setItem(STORAGE_KEY_ACTIVE, importedDocs[0].id);
+
+      return { success: true, count: importedDocs.length };
+    } catch (e: any) {
+      return { success: false, count: 0, error: e?.message || 'Failed to parse JSON backup.' };
+    }
+  }, []);
+
   return (
     <CVContext.Provider
       value={{
@@ -351,7 +401,9 @@ export const CVProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         redo,
         resetToDefault,
         updateCoverLetter,
-        createNewCoverLetter
+        createNewCoverLetter,
+        exportWorkspaceBackup,
+        importWorkspaceBackup
       }}
     >
       {children}

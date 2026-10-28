@@ -37,18 +37,18 @@ export const LandingPage: React.FC = () => {
             {/* Supertitle badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#EFEEEA] border border-[#E5E3DF] rounded-full text-[11px] font-sans tracking-[0.16em] uppercase text-[#807D7A] mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-[#8C8172]"></span>
-              The Minimalist Executive Studio
+              The Minimalist Document Studio
             </div>
 
             {/* Editorial Heading */}
             <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl font-normal tracking-[-0.02em] text-[#0A0A0A] leading-[1.08] mb-6">
-              The Architecture of <br className="hidden sm:inline" />
-              <span className="italic font-normal text-[#8C8172]">Executive Distinction</span>
+              Craft a CV That Reflects <br className="hidden sm:inline" />
+              <span className="italic font-normal text-[#8C8172]">Your Best Work</span>
             </h1>
 
             {/* Subheading / Value Proposition */}
             <p className="text-base sm:text-lg text-[#807D7A] font-sans font-normal leading-relaxed max-w-2xl mx-auto mb-8">
-              Rethought from typography to typesetting. Craft curriculum vitae and leadership dossiers designed for corporate governance, multinational scrutiny, and Fortune 500 boards.
+              Rethought from typography to typesetting. Craft curriculum vitae and professional resumes engineered with structural clarity for software engineers, researchers, consultants, and leaders.
             </p>
 
             {/* CTA Buttons */}
