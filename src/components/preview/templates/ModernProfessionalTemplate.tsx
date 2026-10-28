@@ -1,5 +1,6 @@
 import React from 'react';
 import { CVDocument } from '../../../types/cv';
+import { formatExternalUrl } from '../../../utils/contactUtils';
 
 const ModernSectionHeader: React.FC<{ title: string; className?: string }> = ({ title, className = 'mb-2.5' }) => (
   <div className={`pb-1 border-b border-[#E5E3DF] ${className}`}>
@@ -48,11 +49,44 @@ export const ModernProfessionalTemplate: React.FC<{ doc: CVDocument }> = ({ doc 
                 <span className="mx-1.5 text-[#D1CECA]">/</span>
                 <span>{personalInfo.phone}</span>
               </div>
-              {(personalInfo.linkedin || personalInfo.website) && (
-                <div className="text-[#8C8172]">
-                  {personalInfo.linkedin && <span>{personalInfo.linkedin}</span>}
-                  {personalInfo.linkedin && personalInfo.website && <span className="mx-1.5 text-[#D1CECA]">/</span>}
-                  {personalInfo.website && <span>{personalInfo.website}</span>}
+              {(personalInfo.linkedin || personalInfo.github || personalInfo.website) && (
+                <div className="flex items-center justify-end gap-1.5 text-[#8C8172] font-medium">
+                  {personalInfo.linkedin && (
+                    <a
+                      href={formatExternalUrl(personalInfo.linkedin)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline hover:text-[#0A0A0A] transition-colors"
+                    >
+                      LinkedIn
+                    </a>
+                  )}
+                  {personalInfo.linkedin && (personalInfo.github || personalInfo.website) && (
+                    <span className="text-[#D1CECA]">/</span>
+                  )}
+                  {personalInfo.github && (
+                    <a
+                      href={formatExternalUrl(personalInfo.github)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline hover:text-[#0A0A0A] transition-colors"
+                    >
+                      GitHub
+                    </a>
+                  )}
+                  {personalInfo.github && personalInfo.website && (
+                    <span className="text-[#D1CECA]">/</span>
+                  )}
+                  {personalInfo.website && (
+                    <a
+                      href={formatExternalUrl(personalInfo.website)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline hover:text-[#0A0A0A] transition-colors"
+                    >
+                      Portfolio
+                    </a>
+                  )}
                 </div>
               )}
             </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { CVDocument } from '../../../types/cv';
+import { formatExternalUrl } from '../../../utils/contactUtils';
 
 const ExecutiveSectionHeader: React.FC<{ title: string; className?: string }> = ({ title, className = 'mb-2.5' }) => (
   <div className={`pb-1 border-b border-[#1A1A1A] ${className}`}>
@@ -41,9 +42,54 @@ export const ExecutiveTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
             </div>
             <div className="text-right text-[8.5pt] font-sans text-[#4A4845] space-y-0.5">
               <div className="font-medium text-[#0A0A0A]">{personalInfo.location}</div>
-              <div>{personalInfo.email}</div>
-              <div>{personalInfo.phone}</div>
-              {personalInfo.linkedin && <div className="text-[#8C8172]">{personalInfo.linkedin}</div>}
+              {personalInfo.email && (
+                <div>
+                  <a href={`mailto:${personalInfo.email}`} className="text-[#0A0A0A] hover:underline font-medium">
+                    {personalInfo.email}
+                  </a>
+                </div>
+              )}
+              {personalInfo.phone && (
+                <div>
+                  <a href={`tel:${personalInfo.phone.replace(/\s+/g, '')}`} className="hover:underline">
+                    {personalInfo.phone}
+                  </a>
+                </div>
+              )}
+              {(personalInfo.linkedin || personalInfo.github || personalInfo.website) && (
+                <div className="flex justify-end items-center gap-2 text-[#8C8172] font-medium pt-0.5">
+                  {personalInfo.linkedin && (
+                    <a
+                      href={formatExternalUrl(personalInfo.linkedin)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline hover:text-[#0A0A0A] transition-colors"
+                    >
+                      LinkedIn
+                    </a>
+                  )}
+                  {personalInfo.github && (
+                    <a
+                      href={formatExternalUrl(personalInfo.github)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline hover:text-[#0A0A0A] transition-colors"
+                    >
+                      GitHub
+                    </a>
+                  )}
+                  {personalInfo.website && (
+                    <a
+                      href={formatExternalUrl(personalInfo.website)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline hover:text-[#0A0A0A] transition-colors"
+                    >
+                      Portfolio
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </header>

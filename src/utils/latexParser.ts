@@ -106,15 +106,21 @@ export function parseLatexSource(latex: string, baseDoc: CVDocument): CVDocument
     }
 
     // LinkedIn
-    const linkedinMatch = headerBlock.match(/\\href\{https?:\/\/(?:www\.)?(linkedin\.com\/in\/[^}]+)\}/i) || headerBlock.match(/(linkedin\.com\/in\/[^\s\\}]+)/i);
+    const linkedinMatch = headerBlock.match(/\\href\{([^}]+)\}\{LinkedIn\}/i) || headerBlock.match(/\\href\{https?:\/\/(?:www\.)?(linkedin\.com\/in\/[^}]+)\}/i) || headerBlock.match(/(linkedin\.com\/in\/[^\s\\}]+)/i);
     if (linkedinMatch) {
       updated.personalInfo.linkedin = linkedinMatch[1].trim();
     }
 
-    // Website
-    const websiteMatch = headerBlock.match(/\\href\{https?:\/\/([^}]+)\}\{([^}]+)\}/i);
-    if (websiteMatch && !websiteMatch[1].includes('linkedin') && !websiteMatch[1].includes('mailto')) {
-      updated.personalInfo.website = websiteMatch[2].trim() || websiteMatch[1].trim();
+    // GitHub
+    const githubMatch = headerBlock.match(/\\href\{([^}]+)\}\{GitHub\}/i) || headerBlock.match(/\\href\{https?:\/\/(?:www\.)?(github\.com\/[^}]+)\}/i) || headerBlock.match(/(github\.com\/[^\s\\}]+)/i);
+    if (githubMatch) {
+      updated.personalInfo.github = githubMatch[1].trim();
+    }
+
+    // Website / Portfolio
+    const websiteMatch = headerBlock.match(/\\href\{([^}]+)\}\{(?:Portfolio|Website)\}/i) || headerBlock.match(/\\href\{https?:\/\/([^}]+)\}\{([^}]+)\}/i);
+    if (websiteMatch && !websiteMatch[1].includes('linkedin') && !websiteMatch[1].includes('github') && !websiteMatch[1].includes('mailto')) {
+      updated.personalInfo.website = websiteMatch[1].trim();
     }
 
     // Location: usually before email or bullet

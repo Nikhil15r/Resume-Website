@@ -1,5 +1,6 @@
 import React from 'react';
 import { CVDocument } from '../../../types/cv';
+import { getContactElements } from '../../../utils/contactUtils';
 
 const TechnicalSectionHeader: React.FC<{ title: string; className?: string }> = ({ title, className = 'mb-2.5' }) => (
   <div className={`pb-1 border-b border-[#0A0A0A] ${className}`}>
@@ -16,13 +17,7 @@ export const TechnicalResumeTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) 
   const widthMm = isA4 ? 210 : 215.9;
   const heightMm = isA4 ? 297 : 279.4;
 
-  const contactItems = [
-    personalInfo.location,
-    personalInfo.email,
-    personalInfo.phone,
-    personalInfo.github,
-    personalInfo.linkedin
-  ].filter(Boolean);
+  const contactItems = getContactElements(personalInfo);
 
   return (
     <div className="flex flex-col gap-8 items-center w-full">
@@ -50,12 +45,17 @@ export const TechnicalResumeTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) 
             {contactItems.map((item, idx) => (
               <React.Fragment key={idx}>
                 {idx > 0 && <span className="mx-2 text-[#807D7A] select-none">•</span>}
-                {item?.includes('@') ? (
-                  <a href={`mailto:${item}`} className="text-[#0A0A0A] underline">
-                    {item}
+                {item.href ? (
+                  <a
+                    href={item.href}
+                    target={item.isExternal ? '_blank' : undefined}
+                    rel={item.isExternal ? 'noopener noreferrer' : undefined}
+                    className="text-[#0A0A0A] underline hover:text-[#8C8172] transition-colors"
+                  >
+                    {item.label}
                   </a>
                 ) : (
-                  <span>{item}</span>
+                  <span>{item.label}</span>
                 )}
               </React.Fragment>
             ))}

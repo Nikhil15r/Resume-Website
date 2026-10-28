@@ -1,4 +1,5 @@
 import { CVDocument } from '../types/cv';
+import { formatExternalUrl } from './contactUtils';
 
 export function generateLatexSource(doc: CVDocument): string {
   const { personalInfo, summary, experience, education, skills, projects, certifications, publications, awards, settings } = doc;
@@ -63,11 +64,14 @@ export function generateLatexSource(doc: CVDocument): string {
   {\\fontsize{22}{26}\\selectfont\\textbf{${esc(personalInfo.fullName)}}}\\\\[3pt]
   {\\color{secondaryText}\\fontsize{10.5}{13}\\selectfont\\textit{${esc(personalInfo.title)}}}\\\\[5pt]
   {\\small\\color{secondaryText}
-    ${esc(personalInfo.location)} \\;$\\cdot$\\; 
-    \\href{mailto:${esc(personalInfo.email)}}{${esc(personalInfo.email)}} \\;$\\cdot$\\; 
-    ${esc(personalInfo.phone)}
-    ${personalInfo.linkedin ? ` \\;$\\cdot$\\; \\href{https://${esc(personalInfo.linkedin)}}{${esc(personalInfo.linkedin)}}` : ''}
-    ${personalInfo.website ? ` \\;$\\cdot$\\; \\href{https://${esc(personalInfo.website)}}{${esc(personalInfo.website)}}` : ''}
+    ${[
+      esc(personalInfo.location),
+      personalInfo.email ? `\\href{mailto:${esc(personalInfo.email)}}{${esc(personalInfo.email)}}` : '',
+      esc(personalInfo.phone),
+      personalInfo.linkedin ? `\\href{${esc(formatExternalUrl(personalInfo.linkedin))}}{LinkedIn}` : '',
+      personalInfo.github ? `\\href{${esc(formatExternalUrl(personalInfo.github))}}{GitHub}` : '',
+      personalInfo.website ? `\\href{${esc(formatExternalUrl(personalInfo.website))}}{Portfolio}` : ''
+    ].filter(Boolean).join(' \\;$\\cdot$\\; ')}
   }
 \\end{center}
 
