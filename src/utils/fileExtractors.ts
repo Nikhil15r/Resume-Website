@@ -8,7 +8,8 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * Extracts plain text from an uploaded PDF file
+ * Extracts plain text from an uploaded PDF file with intelligent geometry,
+ * small-caps preservation, and column/tab alignment detection.
  */
 export async function extractTextFromPdf(arrayBuffer: ArrayBuffer): Promise<string> {
   try {
@@ -25,19 +26,40 @@ export async function extractTextFromPdf(arrayBuffer: ArrayBuffer): Promise<stri
       const textContent = await page.getTextContent();
       
       let lastY: number | null = null;
+      let lastX: number | null = null;
+      let lastWidth = 0;
       let pageStr = '';
 
       for (const item of textContent.items) {
         if ('str' in item && typeof item.str === 'string') {
           const str = item.str;
-          // Check for line break based on vertical position
-          if (lastY !== null && Math.abs(item.transform[5] - lastY) > 6) {
+          const currentY = item.transform[5];
+          const currentX = item.transform[4];
+          const width = item.width;
+
+          if (lastY !== null && Math.abs(currentY - lastY) > 5) {
+            // New line based on vertical displacement
             pageStr += '\n';
-          } else if (pageStr.length > 0 && !pageStr.endsWith('\n') && !pageStr.endsWith(' ') && str.trim()) {
-            pageStr += ' ';
+          } else if (lastX !== null && lastY !== null) {
+            const gap = currentX - (lastX + lastWidth);
+            // Detect LaTeX \hfill, large margin fills or table column jumps
+            if ((str.trim() === '' && width > 25) || gap > 25) {
+              if (!pageStr.endsWith('\t')) {
+                pageStr += '\t';
+              }
+              lastY = currentY;
+              lastX = currentX;
+              lastWidth = width;
+              continue;
+            } else if (gap > 3.0 && !pageStr.endsWith(' ') && !pageStr.endsWith('\t') && !str.startsWith(' ') && str.trim()) {
+              // Word boundary spacing
+              pageStr += ' ';
+            }
           }
           pageStr += str;
-          lastY = item.transform[5];
+          lastY = currentY;
+          lastX = currentX;
+          lastWidth = width;
         }
       }
       if (pageStr.trim()) {
