@@ -193,55 +193,55 @@ export const LaTeXEditor: React.FC = () => {
       )}
 
       {/* Top LaTeX Actions Bar */}
-      <div className="flex flex-wrap items-center justify-between px-4 py-2.5 bg-[#141414] border-b border-[#262626] gap-2">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between px-2.5 sm:px-4 py-2 sm:py-2.5 bg-[#141414] border-b border-[#262626] gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <FileCode className="w-4 h-4 text-[#8C8172]" />
           <span className="font-mono text-xs font-semibold text-white tracking-wide">
             main.tex
           </span>
           {currentDoc.isCustomLatex && (
-            <span className="text-[9px] font-mono uppercase bg-[#2A2723] text-[#8C8172] px-2 py-0.5 rounded-sm border border-[#8C8172]/30">
-              Custom Source
+            <span className="hidden xs:inline-block text-[9px] font-mono uppercase bg-[#2A2723] text-[#8C8172] px-2 py-0.5 rounded-sm border border-[#8C8172]/30">
+              Custom
             </span>
           )}
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto">
           <button
             type="button"
             onClick={handleCopy}
-            className="px-2.5 py-1 text-xs font-mono text-[#807D7A] hover:text-white bg-[#1A1A1A] hover:bg-[#2A2A2A] rounded-sm transition-colors flex items-center gap-1"
+            className="px-2 sm:px-2.5 py-1 text-[11px] sm:text-xs font-mono text-[#807D7A] hover:text-white bg-[#1A1A1A] hover:bg-[#2A2A2A] rounded-sm transition-colors flex items-center gap-1"
             title="Copy Source"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{copied ? 'Copied' : 'Copy'}</span>
+            <span className="hidden xs:inline">{copied ? 'Copied' : 'Copy'}</span>
           </button>
 
           <button
             type="button"
             onClick={handleResetToGenerated}
-            className="px-2.5 py-1 text-xs font-mono text-[#807D7A] hover:text-white bg-[#1A1A1A] hover:bg-[#2A2A2A] rounded-sm transition-colors flex items-center gap-1"
+            className="px-2 sm:px-2.5 py-1 text-[11px] sm:text-xs font-mono text-[#807D7A] hover:text-white bg-[#1A1A1A] hover:bg-[#2A2A2A] rounded-sm transition-colors flex items-center gap-1"
             title="Regenerate from Visual Form"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            <span>Re-sync</span>
+            <span className="hidden sm:inline">Re-sync</span>
           </button>
 
           <button
             type="button"
             onClick={handleOpenInOverleaf}
-            className="px-2.5 py-1 text-xs font-mono text-[#EFEEEA] bg-[#222] hover:bg-[#8C8172] rounded-sm transition-colors flex items-center gap-1.5 border border-[#333]"
+            className="px-2 sm:px-2.5 py-1 text-[11px] sm:text-xs font-mono text-[#EFEEEA] bg-[#222] hover:bg-[#8C8172] rounded-sm transition-colors flex items-center gap-1 sm:gap-1.5 border border-[#333]"
             title="Open and compile with real pdflatex in Overleaf"
           >
             <ExternalLink className="w-3.5 h-3.5 text-[#8C8172]" />
-            <span>Open in Overleaf</span>
+            <span>Overleaf</span>
           </button>
 
           <button
             type="button"
             onClick={() => downloadLatexSource(currentDoc)}
-            className="px-2.5 py-1 text-xs font-mono text-[#807D7A] hover:text-white bg-[#1A1A1A] hover:bg-[#2A2A2A] rounded-sm transition-colors flex items-center gap-1"
+            className="px-2 sm:px-2.5 py-1 text-[11px] sm:text-xs font-mono text-[#807D7A] hover:text-white bg-[#1A1A1A] hover:bg-[#2A2A2A] rounded-sm transition-colors flex items-center gap-1"
             title="Download .tex File"
           >
             <Download className="w-3.5 h-3.5" />
@@ -251,7 +251,7 @@ export const LaTeXEditor: React.FC = () => {
           <button
             type="button"
             onClick={() => exportLatexProjectZip(currentDoc)}
-            className="px-2.5 py-1 text-xs font-mono text-[#807D7A] hover:text-white bg-[#1A1A1A] hover:bg-[#2A2A2A] rounded-sm transition-colors flex items-center gap-1"
+            className="hidden sm:flex px-2.5 py-1 text-xs font-mono text-[#807D7A] hover:text-white bg-[#1A1A1A] hover:bg-[#2A2A2A] rounded-sm transition-colors items-center gap-1"
             title="Download Project ZIP"
           >
             <Archive className="w-3.5 h-3.5" />
@@ -263,11 +263,11 @@ export const LaTeXEditor: React.FC = () => {
             onClick={executeSyncAndRefresh}
             disabled={isSyncing}
             title="Save & Synchronize Preview (Ctrl+S)"
-            className="px-3.5 py-1 bg-[#8C8172] hover:bg-[#786E60] text-white text-xs font-mono font-medium rounded-sm transition-colors flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+            className="px-2.5 sm:px-3.5 py-1 bg-[#8C8172] hover:bg-[#786E60] text-white text-[11px] sm:text-xs font-mono font-medium rounded-sm transition-colors flex items-center gap-1 sm:gap-1.5 shadow-sm disabled:opacity-50 shrink-0"
           >
             <RotateCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-            <span>{isSyncing ? 'Syncing...' : 'Sync & Save'}</span>
-            <span className="hidden sm:inline-block text-[9px] bg-black/30 px-1 py-0.5 rounded text-[#EFEEEA]/80 font-mono">
+            <span>{isSyncing ? 'Syncing...' : 'Sync'}</span>
+            <span className="hidden md:inline-block text-[9px] bg-black/30 px-1 py-0.5 rounded text-[#EFEEEA]/80 font-mono">
               Ctrl+S
             </span>
           </button>
@@ -277,9 +277,9 @@ export const LaTeXEditor: React.FC = () => {
       {/* Editor & Line Numbers */}
       <div className="flex-1 flex overflow-hidden relative">
         {/* Line numbers gutter */}
-        <div className="w-12 bg-[#121212] py-4 text-right pr-3 select-none font-mono text-xs text-[#555] overflow-hidden shrink-0 border-r border-[#222]">
+        <div className="w-9 sm:w-12 bg-[#121212] py-3 sm:py-4 text-right pr-2 sm:pr-3 select-none font-mono text-[10px] sm:text-xs text-[#555] overflow-hidden shrink-0 border-r border-[#222]">
           {lineNumbers.map(n => (
-            <div key={n} className="leading-6">
+            <div key={n} className="leading-5 sm:leading-6">
               {n}
             </div>
           ))}
@@ -290,7 +290,7 @@ export const LaTeXEditor: React.FC = () => {
           value={sourceCode}
           onChange={handleSourceChange}
           spellCheck={false}
-          className="flex-1 bg-[#0A0A0A] text-[#F5F5F3] p-4 font-mono text-xs leading-6 resize-none focus:outline-none selection:bg-[#8C8172] selection:text-white overflow-y-auto"
+          className="flex-1 bg-[#0A0A0A] text-[#F5F5F3] p-2.5 sm:p-4 font-mono text-[11px] sm:text-xs leading-5 sm:leading-6 resize-none focus:outline-none selection:bg-[#8C8172] selection:text-white overflow-y-auto"
         />
       </div>
 

@@ -119,8 +119,8 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Document Canvas with Authentic Paper Shadow */}
-            <div className="flex justify-center overflow-x-auto py-4 bg-[#F5F5F3] border border-[#E5E3DF] rounded-sm p-2 sm:p-6">
-              <div className="transform scale-[0.68] sm:scale-[0.82] md:scale-[0.9] origin-top transition-all duration-300">
+            <div className="flex justify-center overflow-hidden py-2 sm:py-4 bg-[#F5F5F3] border border-[#E5E3DF] rounded-sm p-1 sm:p-4 md:p-6 w-full">
+              <div className="w-full flex justify-center">
                 <CVDocumentRenderer doc={previewDoc} zoom={1} />
               </div>
             </div>

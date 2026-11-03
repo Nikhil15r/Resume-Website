@@ -161,22 +161,22 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div 
         onClick={e => e.stopPropagation()}
-        className="w-full max-w-2xl bg-white border border-[#E5E3DF] rounded shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="w-full max-w-2xl bg-white border border-[#E5E3DF] rounded shadow-2xl overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[90vh]"
       >
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#E5E3DF] flex items-center justify-between bg-[#F5F5F3]">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded bg-[#0A0A0A] flex items-center justify-center text-white">
-              <Sparkles className="w-4 h-4 text-[#8C8172]" />
+        <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-[#E5E3DF] flex items-center justify-between bg-[#F5F5F3]">
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded bg-[#0A0A0A] flex items-center justify-center text-white shrink-0">
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#8C8172]" />
             </div>
             <div>
-              <h2 className="font-serif text-lg font-semibold text-[#0A0A0A]">
+              <h2 className="font-serif text-base sm:text-lg font-semibold text-[#0A0A0A]">
                 Universal CV &amp; Resume Parser
               </h2>
-              <p className="text-xs text-[#807D7A]">
+              <p className="text-[11px] sm:text-xs text-[#807D7A] hidden xs:block">
                 Extract structured career data from any PDF, Word document, LaTeX, or raw text.
               </p>
             </div>
@@ -191,7 +191,7 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 overflow-y-auto space-y-6">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-6">
           {!parsedResult ? (
             <>
               {/* Tab Selector */}

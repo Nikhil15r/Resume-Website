@@ -172,8 +172,19 @@ export const EditorPage: React.FC = () => {
         {/* Mobile View Handling */}
         {activeMode === 'preview' ? (
           /* Mobile Preview Only */
-          <div className="flex-1 overflow-y-auto p-4 sm:p-8 bg-[#EFEEEA] flex justify-center items-start">
-            <CVDocumentRenderer doc={currentDoc} zoom={zoom} />
+          <div className="flex-1 overflow-y-auto p-2 sm:p-4 md:p-8 bg-[#EFEEEA] flex flex-col items-center justify-start">
+            <div className="w-full max-w-4xl flex items-center justify-between pb-2 mb-3 border-b border-[#D1CECA] text-xs text-[#807D7A]">
+              <span className="font-mono text-[10px] uppercase text-[#8C8172] font-semibold flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                Live Preview
+              </span>
+              <span className="font-mono text-[10px] uppercase bg-white/80 px-2 py-0.5 rounded border border-[#E5E3DF]">
+                {currentDoc.settings.templateId.replace('-', ' ')}
+              </span>
+            </div>
+            <div className="w-full flex justify-center py-2">
+              <CVDocumentRenderer doc={currentDoc} zoom={zoom} />
+            </div>
           </div>
         ) : activeMode === 'latex' ? (
           /* LaTeX Studio Mode: Resizable Split View */
@@ -209,21 +220,21 @@ export const EditorPage: React.FC = () => {
             </div>
 
             {/* Panel 2: Center Active Editing Interface (Flexible width) */}
-            <main className="flex-1 overflow-y-auto p-6 sm:p-8 lg:p-10 border-r border-[#E5E3DF] bg-[#F5F5F3]">
+            <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 lg:p-10 border-r border-[#E5E3DF] bg-[#F5F5F3]">
               <div className="max-w-3xl mx-auto">
                 {/* Mobile Section Selector Pills */}
-                <div className="flex md:hidden overflow-x-auto gap-1 pb-4 mb-4 border-b border-[#E5E3DF] text-xs">
+                <div className="flex md:hidden overflow-x-auto gap-1 pb-3 mb-4 border-b border-[#E5E3DF] text-xs scrollbar-none">
                   {(['personal', 'summary', 'experience', 'education', 'skills', 'projects', 'certifications', 'style'] as EditorSection[]).map(s => (
                     <button
                       key={s}
                       onClick={() => setActiveSection(s)}
-                      className={`px-3 py-1.5 rounded-sm whitespace-nowrap capitalize transition-colors ${
+                      className={`px-3 py-1.5 rounded-sm whitespace-nowrap capitalize transition-colors text-xs ${
                         activeSection === s
-                          ? 'bg-[#0A0A0A] text-white font-medium'
+                          ? 'bg-[#0A0A0A] text-white font-medium shadow-sm'
                           : 'bg-white text-[#4A4845] border border-[#E5E3DF]'
                       }`}
                     >
-                      {s}
+                      {s === 'personal' ? 'Personal' : s === 'certifications' ? 'Credentials' : s}
                     </button>
                   ))}
                 </div>

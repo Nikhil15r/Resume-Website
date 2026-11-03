@@ -9,6 +9,7 @@ export const CoverLetterPage: React.FC = () => {
   const { currentCoverLetter, updateCoverLetter, createNewCoverLetter, currentDoc } = useCV();
   const [zoom, setZoom] = useState<number>(0.85);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
 
   const handleDirectDownload = async () => {
     setIsDownloadingPdf(true);
@@ -49,46 +50,74 @@ export const CoverLetterPage: React.FC = () => {
   return (
     <div className="h-screen flex flex-col bg-[#F5F5F3] overflow-hidden selection:bg-[#8C8172] selection:text-white">
       {/* Top Header */}
-      <header className="h-16 bg-white border-b border-[#E5E3DF] px-6 flex items-center justify-between z-30 shrink-0 no-print">
-        <div className="flex items-center gap-4">
+      <header className="h-14 sm:h-16 bg-white border-b border-[#E5E3DF] px-3 sm:px-6 flex items-center justify-between z-30 shrink-0 no-print gap-2">
+        <div className="flex items-center gap-2 sm:gap-4 overflow-hidden min-w-0">
           <Link
             to="/dashboard"
-            className="p-1.5 hover:bg-[#EFEEEA] rounded-sm text-[#807D7A] hover:text-[#0A0A0A] transition-colors"
+            className="p-1 sm:p-1.5 hover:bg-[#EFEEEA] rounded-sm text-[#807D7A] hover:text-[#0A0A0A] transition-colors shrink-0"
+            title="Back to Dashboard"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
-          <div>
-            <h1 className="font-serif text-base font-semibold text-[#0A0A0A]">
-              Executive Cover Letter Studio
+          <div className="min-w-0">
+            <h1 className="font-serif text-sm sm:text-base font-semibold text-[#0A0A0A] truncate">
+              Cover Letter Studio
             </h1>
-            <p className="text-[10px] text-[#807D7A] uppercase tracking-wider">
+            <p className="text-[10px] text-[#807D7A] uppercase tracking-wider truncate hidden sm:block">
               {currentCoverLetter.title}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* Mobile View Toggle */}
+        <div className="flex lg:hidden items-center bg-[#EFEEEA] p-0.5 rounded-sm border border-[#E5E3DF] shrink-0">
+          <button
+            type="button"
+            onClick={() => setActiveTab('editor')}
+            className={`px-2.5 py-1 text-xs font-medium rounded-sm transition-colors ${
+              activeTab === 'editor'
+                ? 'bg-white text-[#0A0A0A] shadow-xs font-semibold'
+                : 'text-[#807D7A]'
+            }`}
+          >
+            Form
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('preview')}
+            className={`px-2.5 py-1 text-xs font-medium rounded-sm transition-colors ${
+              activeTab === 'preview'
+                ? 'bg-white text-[#0A0A0A] shadow-xs font-semibold'
+                : 'text-[#807D7A]'
+            }`}
+          >
+            Preview
+          </button>
+        </div>
+
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <button
             onClick={() => createNewCoverLetter()}
-            className="px-3 py-1.5 bg-[#EFEEEA] hover:bg-[#E5E3DF] text-[#0A0A0A] text-xs font-medium rounded-sm border border-[#E5E3DF] transition-colors"
+            className="hidden sm:inline-block px-3 py-1.5 bg-[#EFEEEA] hover:bg-[#E5E3DF] text-[#0A0A0A] text-xs font-medium rounded-sm border border-[#E5E3DF] transition-colors"
           >
-            New Cover Letter
+            New
           </button>
           <button
             onClick={handleDirectDownload}
             disabled={isDownloadingPdf}
-            className="px-4 py-2 bg-[#0A0A0A] hover:bg-[#8C8172] text-white text-xs uppercase tracking-wider font-medium rounded-sm transition-colors flex items-center gap-2 shadow-subtle disabled:opacity-60"
+            className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-[#0A0A0A] hover:bg-[#8C8172] text-white text-[11px] sm:text-xs uppercase tracking-wider font-medium rounded-sm transition-colors flex items-center gap-1.5 sm:gap-2 shadow-subtle disabled:opacity-60"
           >
             {isDownloadingPdf ? (
               <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#8C8172]" />
             ) : (
               <Download className="w-3.5 h-3.5" />
             )}
-            <span>{isDownloadingPdf ? 'Generating PDF...' : 'Download PDF'}</span>
+            <span className="hidden sm:inline">{isDownloadingPdf ? 'Generating...' : 'Download PDF'}</span>
+            <span className="inline sm:hidden">PDF</span>
           </button>
           <button
             onClick={exportToPdfPrint}
-            className="p-2 border border-[#E5E3DF] hover:bg-[#EFEEEA] rounded-sm text-[#807D7A] hover:text-[#0A0A0A] transition-colors"
+            className="p-1.5 sm:p-2 border border-[#E5E3DF] hover:bg-[#EFEEEA] rounded-sm text-[#807D7A] hover:text-[#0A0A0A] transition-colors"
             title="Print Dialog"
           >
             <Printer className="w-3.5 h-3.5" />
@@ -99,7 +128,9 @@ export const CoverLetterPage: React.FC = () => {
       {/* Workspace */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Left: Input Form Panel */}
-        <main className="flex-1 overflow-y-auto p-6 sm:p-10 max-w-2xl border-r border-[#E5E3DF] bg-[#F5F5F3] space-y-6">
+        <main className={`overflow-y-auto p-4 sm:p-8 lg:p-10 border-r border-[#E5E3DF] bg-[#F5F5F3] space-y-6 ${
+          activeTab === 'editor' ? 'flex-1 block' : 'hidden lg:block lg:w-[480px] xl:w-[540px]'
+        }`}>
           <div>
             <h2 className="font-serif text-xl font-medium text-[#0A0A0A] mb-1">
               Letter Details &amp; Addressee
@@ -264,12 +295,15 @@ export const CoverLetterPage: React.FC = () => {
         </main>
 
         {/* Right: Rendered Letter Preview Sheet */}
-        <aside className="hidden lg:flex flex-1 bg-[#EFEEEA] p-8 overflow-y-auto justify-center items-start">
-          <div
-            id="cv-printable-document"
-            className="cv-document-sheet bg-white border border-[#E5E3DF] shadow-paper p-[48pt] text-[#0A0A0A] font-serif text-[10.5pt] leading-[1.6]"
-            style={{ width: '210mm', minHeight: '297mm' }}
-          >
+        <aside className={`flex-1 bg-[#EFEEEA] p-3 sm:p-6 lg:p-8 overflow-y-auto justify-center items-start ${
+          activeTab === 'preview' ? 'flex' : 'hidden lg:flex'
+        }`}>
+          <div className="w-full flex justify-center overflow-x-auto">
+            <div
+              id="cv-printable-document"
+              className="cv-document-sheet bg-white border border-[#E5E3DF] shadow-paper p-6 sm:p-10 md:p-[48pt] text-[#0A0A0A] font-serif text-[10.5pt] leading-[1.6] max-w-full"
+              style={{ width: '210mm', minHeight: '297mm' }}
+            >
             {/* Letterhead */}
             <header className="pb-4 mb-6 border-b border-[#0A0A0A]">
               <div className="flex justify-between items-start">
@@ -319,6 +353,7 @@ export const CoverLetterPage: React.FC = () => {
                 {currentCoverLetter.senderName}
               </div>
             </div>
+          </div>
           </div>
         </aside>
       </div>

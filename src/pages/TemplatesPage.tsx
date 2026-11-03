@@ -174,29 +174,30 @@ export const TemplatesPage: React.FC = () => {
 
       {/* Fullscreen Modal Preview Drawer */}
       {previewingTemplate && (
-        <div className="fixed inset-0 z-50 bg-[#0A0A0A]/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          <div className="bg-[#F5F5F3] rounded-sm border border-[#E5E3DF] w-full max-w-5xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-[#0A0A0A]/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto">
+          <div className="bg-[#F5F5F3] rounded-sm border border-[#E5E3DF] w-full max-w-5xl max-h-[95vh] sm:max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-[#E5E3DF]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-white border-b border-[#E5E3DF] gap-2">
               <div>
-                <h3 className="font-serif text-2xl font-medium text-[#0A0A0A]">
+                <h3 className="font-serif text-lg sm:text-2xl font-medium text-[#0A0A0A]">
                   {previewingTemplate.name}
                 </h3>
-                <p className="text-xs text-[#807D7A]">
+                <p className="text-[11px] sm:text-xs text-[#807D7A]">
                   {previewingTemplate.subtitle} • {previewingTemplate.atsScore}
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 self-end sm:self-auto">
                 <button
                   onClick={() => handleUseTemplate(previewingTemplate.id)}
-                  className="px-4 py-2 bg-[#0A0A0A] hover:bg-[#8C8172] text-white text-xs uppercase tracking-wider font-medium rounded-sm transition-colors"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[#0A0A0A] hover:bg-[#8C8172] text-white text-[11px] sm:text-xs uppercase tracking-wider font-medium rounded-sm transition-colors"
                 >
-                  Create With This Template
+                  Use Template
                 </button>
                 <button
                   onClick={() => setPreviewingTemplate(null)}
-                  className="p-2 rounded-sm hover:bg-[#EFEEEA] text-[#807D7A] hover:text-[#0A0A0A]"
+                  className="p-1.5 sm:p-2 rounded-sm hover:bg-[#EFEEEA] text-[#807D7A] hover:text-[#0A0A0A]"
+                  title="Close preview"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -204,8 +205,8 @@ export const TemplatesPage: React.FC = () => {
             </div>
 
             {/* Modal Document Body */}
-            <div className="flex-1 overflow-y-auto p-6 sm:p-10 flex justify-center bg-[#EFEEEA]/60">
-              <div className="transform scale-[0.8] sm:scale-[0.9] origin-top">
+            <div className="flex-1 overflow-y-auto p-2 sm:p-6 md:p-10 flex justify-center bg-[#EFEEEA]/60">
+              <div className="w-full flex justify-center">
                 <CVDocumentRenderer
                   doc={{
                     ...currentDoc,

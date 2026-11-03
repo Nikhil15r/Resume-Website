@@ -26,23 +26,23 @@ export const LatexStudioPage: React.FC = () => {
   return (
     <div className="h-screen flex flex-col bg-[#0A0A0A] text-[#F5F5F3] overflow-hidden selection:bg-[#8C8172] selection:text-white">
       {/* Top LaTeX Header */}
-      <header className="h-14 bg-[#141414] border-b border-[#262626] px-4 sm:px-6 flex items-center justify-between z-30 shrink-0 no-print">
+      <header className="h-14 bg-[#141414] border-b border-[#262626] px-2.5 sm:px-4 md:px-6 flex items-center justify-between z-30 shrink-0 no-print gap-2">
         {/* Left branding & document select */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 overflow-hidden min-w-0">
           <Link
             to="/dashboard"
-            className="p-1.5 hover:bg-[#222] rounded-sm text-[#807D7A] hover:text-white transition-colors"
+            className="p-1 sm:p-1.5 hover:bg-[#222] rounded-sm text-[#807D7A] hover:text-white transition-colors shrink-0"
             title="Back to Dashboard"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
 
-          <div className="flex items-center gap-2">
-            <span className="font-serif text-sm font-semibold tracking-wider text-white">
-              ATELIER LATEX STUDIO
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <span className="font-serif text-xs sm:text-sm font-semibold tracking-wider text-white truncate">
+              LATEX STUDIO
             </span>
-            <span className="text-[10px] font-mono text-[#8C8172] bg-[#222] px-2 py-0.5 rounded-sm">
-              LaTeX AST &amp; Source Sync
+            <span className="hidden sm:inline-block text-[10px] font-mono text-[#8C8172] bg-[#222] px-2 py-0.5 rounded-sm shrink-0">
+              AST Sync
             </span>
           </div>
 
@@ -79,7 +79,7 @@ export const LatexStudioPage: React.FC = () => {
         </div>
 
         {/* Right action controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Zoom controls */}
           <div className="hidden lg:flex items-center gap-1 text-xs text-[#807D7A] pr-3 border-r border-[#262626]">
             <button
@@ -101,22 +101,24 @@ export const LatexStudioPage: React.FC = () => {
 
           <Link
             to={`/editor/${currentDoc.id}`}
-            className="px-3 py-1.5 bg-[#222] hover:bg-[#333] text-white text-xs font-mono rounded-sm transition-colors"
+            className="px-2.5 sm:px-3 py-1.5 bg-[#222] hover:bg-[#333] text-white text-[11px] sm:text-xs font-mono rounded-sm transition-colors"
           >
-            Switch to Visual Editor
+            <span className="hidden sm:inline">Visual Editor</span>
+            <span className="inline sm:hidden">Form</span>
           </Link>
 
           <button
             onClick={handleDirectDownload}
             disabled={isDownloadingPdf}
-            className="px-3.5 py-1.5 bg-[#8C8172] hover:bg-[#786E60] text-white text-xs font-mono uppercase tracking-wider font-medium rounded-sm transition-colors flex items-center gap-2 shadow-sm disabled:opacity-60"
+            className="px-2.5 sm:px-3.5 py-1.5 bg-[#8C8172] hover:bg-[#786E60] text-white text-[11px] sm:text-xs font-mono uppercase tracking-wider font-medium rounded-sm transition-colors flex items-center gap-1.5 sm:gap-2 shadow-sm disabled:opacity-60"
           >
             {isDownloadingPdf ? (
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
             ) : (
               <Download className="w-3.5 h-3.5" />
             )}
-            <span>{isDownloadingPdf ? 'Exporting PDF...' : 'Download PDF'}</span>
+            <span className="hidden sm:inline">{isDownloadingPdf ? 'Exporting...' : 'Download PDF'}</span>
+            <span className="inline sm:hidden">PDF</span>
           </button>
         </div>
       </header>
@@ -126,18 +128,18 @@ export const LatexStudioPage: React.FC = () => {
         theme="dark"
         editor={<LaTeXEditor />}
         preview={
-          <div className="w-full flex flex-col items-center p-6">
-            <div className="w-full flex items-center justify-between pb-3 mb-4 border-b border-[#262626] text-xs font-mono text-[#807D7A]">
-              <span className="text-[#8C8172] flex items-center gap-2">
+          <div className="w-full flex flex-col items-center p-3 sm:p-6">
+            <div className="w-full flex items-center justify-between pb-2 mb-3 sm:pb-3 sm:mb-4 border-b border-[#262626] text-xs font-mono text-[#807D7A]">
+              <span className="text-[#8C8172] flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                Typeset Preview (A4 Vector)
+                <span>Typeset Preview</span>
               </span>
-              <span className="bg-[#1A1A1A] px-2 py-0.5 rounded text-[#D1CECA] border border-[#333]">
+              <span className="bg-[#1A1A1A] px-2 py-0.5 rounded text-[#D1CECA] border border-[#333] text-[10px]">
                 {currentDoc.settings.templateId.toUpperCase()}
               </span>
             </div>
 
-            <div className="w-full flex justify-center py-2">
+            <div className="w-full flex justify-center py-1 sm:py-2">
               <CVDocumentRenderer doc={currentDoc} zoom={zoom} />
             </div>
           </div>

@@ -99,47 +99,56 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F5F5F3] text-[#0A0A0A] flex flex-col md:flex-row selection:bg-[#8C8172] selection:text-white">
       {/* 1. Compact Left Navigation Sidebar */}
-      <aside className="w-full md:w-64 bg-[#EFEEEA] border-r border-[#E5E3DF] p-6 flex flex-col justify-between shrink-0 no-print">
-        <div className="space-y-8">
+      <aside className="w-full md:w-64 bg-[#EFEEEA] border-b md:border-b-0 md:border-r border-[#E5E3DF] p-4 sm:p-6 flex flex-col justify-between shrink-0 no-print">
+        <div className="space-y-4 sm:space-y-8">
           {/* Logo / Header */}
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 bg-[#0A0A0A] rounded-sm text-white flex items-center justify-center font-serif font-bold text-xs">
-              A
-            </div>
-            <div>
-              <div className="font-serif text-base font-semibold tracking-wider text-[#0A0A0A]">
-                ATELIER CV
+          <div className="flex items-center justify-between md:justify-start gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 bg-[#0A0A0A] rounded-sm text-white flex items-center justify-center font-serif font-bold text-xs">
+                A
               </div>
-              <div className="text-[9px] uppercase tracking-widest text-[#807D7A]">
-                Professional Workspace
+              <div>
+                <div className="font-serif text-base font-semibold tracking-wider text-[#0A0A0A]">
+                  ATELIER CV
+                </div>
+                <div className="text-[9px] uppercase tracking-widest text-[#807D7A]">
+                  Professional Workspace
+                </div>
               </div>
             </div>
+
+            <Link
+              to="/"
+              className="text-xs text-[#8C8172] hover:text-[#0A0A0A] md:hidden font-mono"
+            >
+              Home →
+            </Link>
           </div>
 
           {/* Quick Create CTA & Parse CTA */}
-          <div className="space-y-2">
+          <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
             <button
               onClick={() => handleCreateNew()}
-              className="w-full py-2.5 px-3 bg-[#0A0A0A] hover:bg-[#8C8172] text-[#F5F5F3] text-xs uppercase tracking-[0.14em] font-medium rounded-sm transition-luxury flex items-center justify-center gap-2 shadow-subtle"
+              className="w-full py-2 sm:py-2.5 px-3 bg-[#0A0A0A] hover:bg-[#8C8172] text-[#F5F5F3] text-[11px] sm:text-xs uppercase tracking-[0.1em] sm:tracking-[0.14em] font-medium rounded-sm transition-luxury flex items-center justify-center gap-1.5 sm:gap-2 shadow-subtle"
             >
               <Plus className="w-4 h-4" />
-              <span>Create New CV</span>
+              <span>New CV</span>
             </button>
             <button
               onClick={() => setIsParserModalOpen(true)}
-              className="w-full py-2 px-3 bg-white hover:bg-[#F5F5F3] text-[#0A0A0A] border border-[#D1CECA] text-xs uppercase tracking-[0.12em] font-medium rounded-sm transition-colors flex items-center justify-center gap-2 shadow-sm"
+              className="w-full py-2 px-3 bg-white hover:bg-[#F5F5F3] text-[#0A0A0A] border border-[#D1CECA] text-[11px] sm:text-xs uppercase tracking-[0.1em] sm:tracking-[0.12em] font-medium rounded-sm transition-colors flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm"
               title="Parse an existing PDF, Word, LaTeX, or raw text resume"
             >
               <Upload className="w-3.5 h-3.5 text-[#8C8172]" />
-              <span>Import / Parse CV</span>
+              <span>Import CV</span>
             </button>
           </div>
 
-          {/* Navigation Items */}
-          <nav className="space-y-1 text-xs">
+          {/* Navigation Items - Scrollable horizontally on mobile */}
+          <nav className="flex md:flex-col overflow-x-auto gap-1 text-xs pb-1 md:pb-0 scrollbar-none">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-sm font-medium transition-luxury ${
+              className={`flex items-center gap-2 sm:gap-3 px-3 py-2 rounded-sm font-medium whitespace-nowrap transition-luxury shrink-0 ${
                 activeTab === 'overview'
                   ? 'bg-white text-[#0A0A0A] shadow-subtle border border-[#E5E3DF]'
                   : 'text-[#807D7A] hover:text-[#0A0A0A] hover:bg-white/60'
@@ -151,7 +160,7 @@ export const DashboardPage: React.FC = () => {
 
             <button
               onClick={() => setActiveTab('my-cvs')}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-sm font-medium transition-luxury ${
+              className={`flex items-center gap-2 sm:gap-3 px-3 py-2 rounded-sm font-medium whitespace-nowrap transition-luxury shrink-0 ${
                 activeTab === 'my-cvs'
                   ? 'bg-white text-[#0A0A0A] shadow-subtle border border-[#E5E3DF]'
                   : 'text-[#807D7A] hover:text-[#0A0A0A] hover:bg-white/60'
@@ -159,14 +168,14 @@ export const DashboardPage: React.FC = () => {
             >
               <FileText className="w-4 h-4 text-[#8C8172]" />
               <span>My CVs</span>
-              <span className="ml-auto text-[10px] bg-[#E5E3DF] px-1.5 py-0.2 rounded-full text-[#4A4845]">
+              <span className="ml-1 md:ml-auto text-[10px] bg-[#E5E3DF] px-1.5 py-0.2 rounded-full text-[#4A4845]">
                 {documents.length}
               </span>
             </button>
 
             <Link
               to="/templates"
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-sm font-medium text-[#807D7A] hover:text-[#0A0A0A] hover:bg-white/60 transition-luxury"
+              className="flex items-center gap-2 sm:gap-3 px-3 py-2 rounded-sm font-medium whitespace-nowrap text-[#807D7A] hover:text-[#0A0A0A] hover:bg-white/60 transition-luxury shrink-0"
             >
               <LayoutTemplate className="w-4 h-4 text-[#8C8172]" />
               <span>Templates</span>
@@ -174,7 +183,7 @@ export const DashboardPage: React.FC = () => {
 
             <Link
               to="/latex"
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-sm font-medium text-[#807D7A] hover:text-[#0A0A0A] hover:bg-white/60 transition-luxury"
+              className="flex items-center gap-2 sm:gap-3 px-3 py-2 rounded-sm font-medium whitespace-nowrap text-[#807D7A] hover:text-[#0A0A0A] hover:bg-white/60 transition-luxury shrink-0"
             >
               <Code className="w-4 h-4 text-[#8C8172]" />
               <span>LaTeX Studio</span>
@@ -182,7 +191,7 @@ export const DashboardPage: React.FC = () => {
 
             <Link
               to="/cover-letters"
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-sm font-medium text-[#807D7A] hover:text-[#0A0A0A] hover:bg-white/60 transition-luxury"
+              className="flex items-center gap-2 sm:gap-3 px-3 py-2 rounded-sm font-medium whitespace-nowrap text-[#807D7A] hover:text-[#0A0A0A] hover:bg-white/60 transition-luxury shrink-0"
             >
               <Mail className="w-4 h-4 text-[#8C8172]" />
               <span>Cover Letters</span>
@@ -190,7 +199,7 @@ export const DashboardPage: React.FC = () => {
 
             <button
               onClick={() => setActiveTab('settings')}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-sm font-medium transition-luxury ${
+              className={`flex items-center gap-2 sm:gap-3 px-3 py-2 rounded-sm font-medium whitespace-nowrap transition-luxury shrink-0 ${
                 activeTab === 'settings'
                   ? 'bg-white text-[#0A0A0A] shadow-subtle border border-[#E5E3DF]'
                   : 'text-[#807D7A] hover:text-[#0A0A0A] hover:bg-white/60'
@@ -221,42 +230,42 @@ export const DashboardPage: React.FC = () => {
       </aside>
 
       {/* 2. Main Workspace Dashboard */}
-      <main className="flex-1 p-6 sm:p-10 lg:p-12 overflow-y-auto max-w-7xl">
+      <main className="flex-1 p-4 sm:p-8 lg:p-12 overflow-y-auto max-w-7xl">
         {/* Welcome Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between pb-8 mb-8 border-b border-[#E5E3DF] gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between pb-6 sm:pb-8 mb-6 sm:mb-8 border-b border-[#E5E3DF] gap-4">
           <div>
-            <div className="text-xs uppercase tracking-[0.2em] font-sans text-[#8C8172] mb-1.5 font-medium">
+            <div className="text-xs uppercase tracking-[0.2em] font-sans text-[#8C8172] mb-1 font-medium">
               Portfolio Overview
             </div>
-            <h1 className="font-serif text-3xl sm:text-4xl text-[#0A0A0A] font-normal tracking-tight">
+            <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[#0A0A0A] font-normal tracking-tight">
               Executive Documents
             </h1>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {/* Search Input */}
-            <div className="relative">
+            <div className="relative flex-1 sm:flex-initial">
               <Search className="w-4 h-4 text-[#807D7A] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search CVs..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="pl-9 pr-4 py-2 bg-white border border-[#E5E3DF] rounded-sm text-xs focus:outline-none focus:border-[#8C8172] w-48 sm:w-64 transition-colors"
+                className="w-full pl-9 pr-4 py-2 bg-white border border-[#E5E3DF] rounded-sm text-xs focus:outline-none focus:border-[#8C8172] sm:w-64 transition-colors"
               />
             </div>
 
             <button
               onClick={() => setIsParserModalOpen(true)}
-              className="px-3.5 py-2 bg-white hover:bg-[#EFEEEA] border border-[#D1CECA] text-[#0A0A0A] text-xs uppercase tracking-[0.12em] font-medium rounded-sm transition-colors flex items-center gap-2 shadow-subtle shrink-0"
+              className="px-3 py-2 bg-white hover:bg-[#EFEEEA] border border-[#D1CECA] text-[#0A0A0A] text-xs uppercase tracking-[0.1em] font-medium rounded-sm transition-colors flex items-center gap-1.5 shadow-subtle shrink-0"
             >
               <Upload className="w-3.5 h-3.5 text-[#8C8172]" />
-              <span>Import &amp; Parse</span>
+              <span className="hidden xs:inline">Import</span>
             </button>
 
             <button
               onClick={() => handleCreateNew()}
-              className="px-4 py-2 bg-[#0A0A0A] hover:bg-[#8C8172] text-[#F5F5F3] text-xs uppercase tracking-[0.12em] font-medium rounded-sm transition-luxury flex items-center gap-2 shadow-subtle shrink-0"
+              className="px-3.5 sm:px-4 py-2 bg-[#0A0A0A] hover:bg-[#8C8172] text-[#F5F5F3] text-xs uppercase tracking-[0.1em] sm:tracking-[0.12em] font-medium rounded-sm transition-luxury flex items-center gap-1.5 sm:gap-2 shadow-subtle shrink-0"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>New CV</span>

@@ -170,19 +170,19 @@ export const ATSHealthCheckModal: React.FC<ATSHealthCheckModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-sm shadow-2xl border border-[#E5E3DF] w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white rounded-sm shadow-2xl border border-[#E5E3DF] w-full max-w-2xl overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh]">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#E5E3DF] flex items-center justify-between bg-[#F5F5F3]">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-sm bg-[#0A0A0A] text-white flex items-center justify-center">
+        <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-[#E5E3DF] flex items-center justify-between bg-[#F5F5F3]">
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-sm bg-[#0A0A0A] text-white flex items-center justify-center shrink-0">
               <ShieldCheck className="w-4 h-4 text-[#8C8172]" />
             </div>
             <div>
-              <h2 className="font-serif text-lg font-bold text-[#0A0A0A]">
+              <h2 className="font-serif text-base sm:text-lg font-bold text-[#0A0A0A]">
                 ATS Health &amp; Readiness Audit
               </h2>
-              <p className="text-xs text-[#807D7A]">
+              <p className="text-[11px] sm:text-xs text-[#807D7A] hidden xs:block">
                 Automated document parsing diagnostics for corporate applicant tracking systems
               </p>
             </div>
@@ -196,7 +196,7 @@ export const ATSHealthCheckModal: React.FC<ATSHealthCheckModalProps> = ({
         </div>
 
         {/* Content Body */}
-        <div className="p-6 overflow-y-auto space-y-6">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-6">
           {/* Top Score Banner */}
           <div className={`p-5 rounded-sm border flex items-center justify-between ${getScoreColor(percentage)}`}>
             <div className="space-y-1">

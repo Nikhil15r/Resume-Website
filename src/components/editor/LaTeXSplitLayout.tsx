@@ -46,6 +46,7 @@ export const LaTeXSplitLayout: React.FC<LaTeXSplitLayoutProps> = ({
 
   const [isDragging, setIsDragging] = useState(false);
   const [collapsedPane, setCollapsedPane] = useState<'none' | 'editor' | 'preview'>('none');
+  const [mobileTab, setMobileTab] = useState<'editor' | 'preview'>('editor');
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Mouse move handler during drag
@@ -110,6 +111,41 @@ export const LaTeXSplitLayout: React.FC<LaTeXSplitLayoutProps> = ({
       ref={containerRef}
       className={`flex-1 flex flex-col lg:flex-row overflow-hidden relative ${className}`}
     >
+      {/* Mobile Tab Switcher for Editor vs Preview */}
+      <div className={`flex lg:hidden items-center justify-between px-3 py-2 border-b shrink-0 ${
+        isDark ? 'bg-[#141414] border-[#262626]' : 'bg-[#EFEEEA] border-[#E5E3DF]'
+      }`}>
+        <div className="flex items-center gap-1 bg-black/20 p-0.5 rounded-sm">
+          <button
+            type="button"
+            onClick={() => setMobileTab('editor')}
+            className={`px-3 py-1 text-xs font-mono rounded-sm transition-colors flex items-center gap-1.5 ${
+              mobileTab === 'editor'
+                ? isDark ? 'bg-[#262626] text-white font-semibold' : 'bg-white text-[#0A0A0A] shadow-xs font-semibold'
+                : 'text-[#807D7A]'
+            }`}
+          >
+            <FileCode className="w-3.5 h-3.5" />
+            <span>Editor</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab('preview')}
+            className={`px-3 py-1 text-xs font-mono rounded-sm transition-colors flex items-center gap-1.5 ${
+              mobileTab === 'preview'
+                ? isDark ? 'bg-[#262626] text-white font-semibold' : 'bg-white text-[#0A0A0A] shadow-xs font-semibold'
+                : 'text-[#807D7A]'
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>Preview</span>
+          </button>
+        </div>
+        <span className="text-[10px] font-mono text-[#8C8172]">
+          {mobileTab === 'editor' ? 'LaTeX Code' : 'Compiled PDF'}
+        </span>
+      </div>
+
       {/* Fullscreen drag overlay to ensure seamless mouse events */}
       {isDragging && (
         <div className="fixed inset-0 z-50 cursor-col-resize select-none" />
@@ -119,11 +155,12 @@ export const LaTeXSplitLayout: React.FC<LaTeXSplitLayoutProps> = ({
       <div
         style={{
           width: collapsedPane === 'editor' ? '0%' : collapsedPane === 'preview' ? '100%' : `${splitPercent}%`,
-          display: collapsedPane === 'editor' ? 'none' : 'flex'
         }}
-        className="h-full flex-col overflow-hidden transition-[width] duration-75 ease-out relative"
+        className={`h-full flex-col overflow-hidden transition-[width] duration-75 ease-out relative ${
+          collapsedPane === 'editor' ? 'hidden' : mobileTab === 'editor' ? 'flex w-full lg:w-auto' : 'hidden lg:flex'
+        }`}
       >
-        <div className="flex-1 p-2.5 sm:p-3 overflow-hidden">
+        <div className="flex-1 p-2 sm:p-2.5 lg:p-3 overflow-hidden">
           {editor}
         </div>
       </div>
@@ -227,9 +264,10 @@ export const LaTeXSplitLayout: React.FC<LaTeXSplitLayoutProps> = ({
       <div
         style={{
           width: collapsedPane === 'preview' ? '0%' : collapsedPane === 'editor' ? '100%' : `${100 - splitPercent}%`,
-          display: collapsedPane === 'preview' ? 'none' : 'flex'
         }}
         className={`h-full flex-col overflow-y-auto transition-[width] duration-75 ease-out relative ${
+          collapsedPane === 'preview' ? 'hidden' : mobileTab === 'preview' ? 'flex w-full lg:w-auto' : 'hidden lg:flex'
+        } ${
           isDark 
             ? 'bg-[#121212] border-l border-[#262626]' 
             : 'bg-[#EFEEEA] border-l border-[#E5E3DF]'
