@@ -1,4 +1,4 @@
-import { CVDocument, WorkExperience, Education, SkillCategory, Project, Certification, Publication } from '../types/cv';
+import { CVDocument, WorkExperience, Education, SkillCategory, Project, Certification, Publication, PersonalDetailItem } from '../types/cv';
 
 /**
  * Unescapes special LaTeX symbols back into plain text
@@ -333,6 +333,42 @@ export function parseLatexSource(latex: string, baseDoc: CVDocument): CVDocument
         }
       } catch (err) {
         console.warn('Error parsing skills from LaTeX:', err);
+      }
+      break;
+    }
+  }
+
+  // 6b. Parse Personal Details & Additional Information
+  for (const [title, content] of sections.entries()) {
+    if (title.includes('personal detail') || title.includes('additional info') || title.includes('additional detail')) {
+      try {
+        const itemizeMatch = content.match(/\\begin\{itemize\}[^]*?([\s\S]*?)\\end\{itemize\}/i);
+        const itemsBlock = itemizeMatch ? itemizeMatch[1] : content;
+        const rawItems = itemsBlock.split(/\\item\s+/i).map(s => s.trim()).filter(Boolean);
+
+        const parsedDetails: PersonalDetailItem[] = [];
+
+        rawItems.forEach((raw, idx) => {
+          const labelMatch = raw.match(/\\textbf\{([^}:]+):?\}/);
+          if (labelMatch) {
+            const label = stripMacros(labelMatch[1]).trim();
+            const rest = raw.replace(/\\textbf\{[^}]*\}:?/, '').trim();
+            const value = stripMacros(rest).replace(/^:\s*/, '').trim();
+            if (label && value) {
+              parsedDetails.push({
+                id: `pd-${idx + 1}`,
+                label,
+                value
+              });
+            }
+          }
+        });
+
+        if (parsedDetails.length > 0) {
+          updated.personalDetails = parsedDetails;
+        }
+      } catch (err) {
+        console.warn('Error parsing personal details from LaTeX:', err);
       }
       break;
     }

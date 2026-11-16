@@ -104,6 +104,7 @@ export const INITIAL_CV: CVDocument = {
       items: ['Zero-Trust Architecture', 'SOC 2 & ISO 27001', 'PostgreSQL / CockroachDB', 'Distributed Consensus (Raft/Paxos)', 'eBPF Observability']
     }
   ],
+  personalDetails: [],
   projects: [
     {
       id: 'proj-1',

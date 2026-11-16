@@ -11,7 +11,7 @@ const ConsultingSectionHeader: React.FC<{ title: string; className?: string }> =
 );
 
 export const ConsultingTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
-  const { personalInfo, summary, experience, education, skills, projects, awards, certifications, settings } = doc;
+  const { personalInfo, summary, experience, education, skills, projects, awards, certifications, settings, personalDetails = [] } = doc;
 
   const isA4 = settings.paperSize === 'a4';
   const widthMm = isA4 ? 210 : 215.9;
@@ -112,7 +112,7 @@ export const ConsultingTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
       </div>
 
       {/* -------------------- PAGE 2 -------------------- */}
-      {(education.length > 0 || skills.length > 0 || projects.length > 0 || certifications.length > 0 || (awards && awards.length > 0)) && (
+      {(education.length > 0 || skills.length > 0 || projects.length > 0 || certifications.length > 0 || (awards && awards.length > 0) || personalDetails.length > 0) && (
         <div
           id="cv-page-2"
           className="cv-page-sheet relative bg-white text-[#0A0A0A] font-serif text-[10pt] leading-[1.45] p-[40pt] border border-[#E5E3DF] shadow-paper hover:shadow-paper-lg transition-shadow text-left"
@@ -165,6 +165,21 @@ export const ConsultingTemplate: React.FC<{ doc: CVDocument }> = ({ doc }) => {
                 <div key={sk.id} className="flex items-baseline gap-1.5">
                   <span className="font-semibold text-[#0A0A0A] shrink-0">{sk.category}:</span>
                   <span className="text-[#333]">{sk.items.join('  •  ')}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Personal Details & Additional Information */}
+        {personalDetails.length > 0 && (
+          <section className="mb-4">
+            <ConsultingSectionHeader title="Personal Details & Additional Information" />
+            <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 font-sans text-[8.5pt]">
+              {personalDetails.map(pd => (
+                <div key={pd.id} className="flex items-baseline gap-2">
+                  <span className="font-semibold text-[#0A0A0A] shrink-0">{pd.label}:</span>
+                  <span className="text-[#333]">{pd.value}</span>
                 </div>
               ))}
             </div>

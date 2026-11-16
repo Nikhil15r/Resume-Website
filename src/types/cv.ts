@@ -51,6 +51,12 @@ export interface SkillCategory {
   items: string[];
 }
 
+export interface PersonalDetailItem {
+  id: string;
+  label: string;
+  value: string;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -110,6 +116,7 @@ export interface CVDocument {
   experience: WorkExperience[];
   education: Education[];
   skills: SkillCategory[];
+  personalDetails?: PersonalDetailItem[];
   projects: Project[];
   certifications: Certification[];
   publications: Publication[];

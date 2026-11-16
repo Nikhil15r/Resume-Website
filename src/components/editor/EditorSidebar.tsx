@@ -12,12 +12,14 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Info
 } from 'lucide-react';
 import { useCV } from '../../context/CVContext';
 
 export type EditorSection = 
   | 'personal'
+  | 'personalDetails'
   | 'summary'
   | 'experience'
   | 'education'
@@ -47,6 +49,13 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
       label: 'Personal Info',
       icon: <User className="w-4 h-4" />,
       complete: Boolean(currentDoc.personalInfo.fullName && currentDoc.personalInfo.email)
+    },
+    {
+      id: 'personalDetails',
+      label: 'Personal Details',
+      icon: <Info className="w-4 h-4" />,
+      count: (currentDoc.personalDetails || []).length,
+      complete: Boolean(currentDoc.personalDetails && currentDoc.personalDetails.length > 0)
     },
     {
       id: 'summary',

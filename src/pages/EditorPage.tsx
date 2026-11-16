@@ -5,6 +5,7 @@ import { useCV } from '../context/CVContext';
 import { EditorToolbar } from '../components/editor/EditorToolbar';
 import { EditorSidebar, EditorSection } from '../components/editor/EditorSidebar';
 import { PersonalInfoForm } from '../components/editor/forms/PersonalInfoForm';
+import { PersonalDetailsForm } from '../components/editor/forms/PersonalDetailsForm';
 import { SummaryForm } from '../components/editor/forms/SummaryForm';
 import { ExperienceForm } from '../components/editor/forms/ExperienceForm';
 import { EducationForm } from '../components/editor/forms/EducationForm';
@@ -126,6 +127,8 @@ export const EditorPage: React.FC = () => {
     switch (activeSection) {
       case 'personal':
         return <PersonalInfoForm />;
+      case 'personalDetails':
+        return <PersonalDetailsForm />;
       case 'summary':
         return <SummaryForm />;
       case 'experience':
@@ -224,7 +227,7 @@ export const EditorPage: React.FC = () => {
               <div className="max-w-3xl mx-auto">
                 {/* Mobile Section Selector Pills */}
                 <div className="flex md:hidden overflow-x-auto gap-1 pb-3 mb-4 border-b border-[#E5E3DF] text-xs scrollbar-none">
-                  {(['personal', 'summary', 'experience', 'education', 'skills', 'projects', 'certifications', 'style'] as EditorSection[]).map(s => (
+                  {(['personal', 'personalDetails', 'summary', 'experience', 'education', 'skills', 'projects', 'certifications', 'style'] as EditorSection[]).map(s => (
                     <button
                       key={s}
                       onClick={() => setActiveSection(s)}
@@ -234,7 +237,7 @@ export const EditorPage: React.FC = () => {
                           : 'bg-white text-[#4A4845] border border-[#E5E3DF]'
                       }`}
                     >
-                      {s === 'personal' ? 'Personal' : s === 'certifications' ? 'Credentials' : s}
+                      {s === 'personal' ? 'Personal' : s === 'personalDetails' ? 'Details' : s === 'certifications' ? 'Credentials' : s}
                     </button>
                   ))}
                 </div>

@@ -1,4 +1,4 @@
-import { CVDocument, WorkExperience, Education, SkillCategory, Project, Certification, Publication } from '../types/cv';
+import { CVDocument, WorkExperience, Education, SkillCategory, Project, Certification, Publication, PersonalDetailItem } from '../types/cv';
 import { INITIAL_CV } from '../data/mockCV';
 import { parseLatexSource } from './latexParser';
 
@@ -10,6 +10,7 @@ export interface ParsingStats {
     experience: number;
     education: number;
     skills: number;
+    personalDetails?: number;
     projects: number;
     certifications: number;
   };
@@ -23,6 +24,7 @@ export interface ParsedResumeResult {
 
 // Section Header matching patterns
 const SECTION_PATTERNS: { key: string; regex: RegExp }[] = [
+  { key: 'personalDetails', regex: /^(?:personal\s+(?:details|information|data)|additional\s+(?:information|details)|other\s+details|demographic\s+details|bio[- ]?data)$/i },
   { key: 'summary', regex: /^(?:executive\s+|professional\s+)?(?:summary|profile|about(?:\s+me)?|biography|objective|career\s+objective)$/i },
   { key: 'experience', regex: /^(?:professional\s+|work\s+|career\s+|relevant\s+)?(?:experience|employment(?:\s+history)?|work\s+history|positions\s+held)$/i },
   { key: 'education', regex: /^(?:academic\s+|educational\s+)?(?:education|qualifications|academic\s+background|academic\s+credentials|degrees)(?:\s*&\s*(?:certifications|training))?$/i },
@@ -31,6 +33,9 @@ const SECTION_PATTERNS: { key: string; regex: RegExp }[] = [
   { key: 'projects', regex: /^(?:key\s+|strategic\s+|technical\s+|personal\s+)?(?:projects|initiatives|portfolio(?:\s+projects)?)$/i },
   { key: 'publications', regex: /^(?:publications|research|patents|published\s+works)$/i }
 ];
+
+// Demographic and personal attributes pattern to avoid polluting skills
+const PERSONAL_DEMOGRAPHIC_REGEX = /^(?:date\s+of\s+birth|dob|d\.o\.b\.?|gender|sex|marital\s+status|marital|marriage\s+status|nationality|citizenship|religion|languages?(?:\s+known)?|father'?s?\s+name|mother'?s?\s+name|passport(?:\s+(?:no|number))?|visa\s+status|permanent\s+address|current\s+address|hobbies|interests|blood\s+group)$/i;
 
 // Comprehensive date range pattern matching "August 2026 – Present", "2018 - 2022", "06/2021 - Present", etc.
 const DATE_RANGE_REGEX = /(?:(?:(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.?,?\s+)?\b(?:19|20)\d{2}\b\s*(?:–|-|to|—)\s*(?:(?:(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.?,?\s+)?\b(?:19|20)\d{2}\b|present|current)\b|\b(?:19|20)\d{2}\s*(?:–|-|to|—)\s*(?:(?:19|20)\d{2}|present|current)\b)/i;
@@ -192,8 +197,40 @@ export function parseResumeText(rawText: string, formatHint = 'text'): ParsedRes
     sectionsFound.push(`Education (${education.length})`);
   }
 
-  // --- Step 3D: Parse Skills ---
-  const skills = parseSkills(sections.skills || []);
+  // --- Step 3D: Parse Personal Details & Skills Separately ---
+  const personalDetailLines: string[] = [...(sections.personalDetails || [])];
+  const cleanedSkillLines: string[] = [];
+
+  for (const line of (sections.skills || [])) {
+    const clean = line.replace(/^[\s•·*\-–—]+/, '').trim();
+    const colonIdx = clean.indexOf(':');
+    const dashIdx = clean.indexOf(' - ');
+    let isPersonal = false;
+    if (colonIdx !== -1 && colonIdx < 45) {
+      const label = clean.slice(0, colonIdx).trim();
+      if (PERSONAL_DEMOGRAPHIC_REGEX.test(label)) {
+        isPersonal = true;
+      }
+    } else if (dashIdx !== -1 && dashIdx < 45) {
+      const label = clean.slice(0, dashIdx).trim();
+      if (PERSONAL_DEMOGRAPHIC_REGEX.test(label)) {
+        isPersonal = true;
+      }
+    }
+
+    if (isPersonal) {
+      personalDetailLines.push(line);
+    } else {
+      cleanedSkillLines.push(line);
+    }
+  }
+
+  const personalDetails = parsePersonalDetails(personalDetailLines);
+  if (personalDetails.length > 0) {
+    sectionsFound.push(`Personal Details (${personalDetails.length})`);
+  }
+
+  const skills = parseSkills(cleanedSkillLines);
   if (skills.length > 0) {
     sectionsFound.push(`Skills (${skills.reduce((a, s) => a + s.items.length, 0)})`);
   }
@@ -233,6 +270,7 @@ export function parseResumeText(rawText: string, formatHint = 'text'): ParsedRes
     experience: experiences,
     education: education,
     skills: skills,
+    personalDetails: personalDetails,
     projects: projects,
     certifications: certifications,
     publications: [],
@@ -261,6 +299,7 @@ export function parseResumeText(rawText: string, formatHint = 'text'): ParsedRes
   if (experiences.length > 0) score += 15;
   if (education.length > 0) score += 5;
   if (skills.length > 0) score += 5;
+  if (personalDetails.length > 0) score += 5;
 
   return {
     document: doc,
@@ -272,6 +311,7 @@ export function parseResumeText(rawText: string, formatHint = 'text'): ParsedRes
         experience: doc.experience.length,
         education: doc.education.length,
         skills: doc.skills.reduce((a, s) => a + s.items.length, 0),
+        personalDetails: doc.personalDetails?.length || 0,
         projects: doc.projects.length,
         certifications: doc.certifications.length
       }
@@ -583,6 +623,44 @@ function parseEducation(lines: string[]): Education[] {
 }
 
 /**
+ * Parses personal demographic details (e.g. Date of Birth, Gender, Nationality, Marital Status).
+ */
+function parsePersonalDetails(lines: string[]): PersonalDetailItem[] {
+  const details: PersonalDetailItem[] = [];
+  for (const line of lines) {
+    const clean = line.replace(/^[\s•·*\-–—]+/, '').trim();
+    if (!clean) continue;
+    const colonIdx = clean.indexOf(':');
+    if (colonIdx !== -1 && colonIdx < 45) {
+      const label = clean.slice(0, colonIdx).trim();
+      const value = clean.slice(colonIdx + 1).trim();
+      if (label && value) {
+        details.push({
+          id: `pd-${details.length + 1}`,
+          label,
+          value
+        });
+        continue;
+      }
+    }
+    const dashIdx = clean.indexOf(' - ');
+    if (dashIdx !== -1 && dashIdx < 45) {
+      const label = clean.slice(0, dashIdx).trim();
+      const value = clean.slice(dashIdx + 3).trim();
+      if (label && value) {
+        details.push({
+          id: `pd-${details.length + 1}`,
+          label,
+          value
+        });
+        continue;
+      }
+    }
+  }
+  return details;
+}
+
+/**
  * Parses categorized technical capabilities and competencies.
  */
 function parseSkills(lines: string[]): SkillCategory[] {
@@ -595,6 +673,10 @@ function parseSkills(lines: string[]): SkillCategory[] {
 
     if (colonIdx !== -1 && colonIdx < 40) {
       const catName = line.slice(0, colonIdx).replace(/^[\s•·*\-–—]+/, '').trim();
+      // Ensure demographic details are not captured as skill categories
+      if (PERSONAL_DEMOGRAPHIC_REGEX.test(catName)) {
+        continue;
+      }
       const itemsStr = line.slice(colonIdx + 1).trim();
       const items = itemsStr.split(/[,•·|/]/).map(s => s.trim()).filter(s => s.length > 0 && s.length < 40);
       currentCat = {
@@ -724,6 +806,11 @@ function mapJsonResumeToAtelier(json: any): CVDocument {
       id: `sk-${idx + 1}`,
       category: s.name || 'Technical Skills',
       items: s.keywords || []
+    })),
+    personalDetails: (json.personalDetails || []).map((p: any, idx: number) => ({
+      id: p.id || `pd-${idx + 1}`,
+      label: p.label || 'Detail',
+      value: p.value || ''
     })),
     projects: (json.projects || []).map((p: any, idx: number) => ({
       id: `proj-${idx + 1}`,

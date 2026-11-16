@@ -2,7 +2,7 @@ import { CVDocument } from '../types/cv';
 import { formatExternalUrl } from './contactUtils';
 
 export function generateLatexSource(doc: CVDocument): string {
-  const { personalInfo, summary, experience, education, skills, projects, certifications, publications, awards, settings } = doc;
+  const { personalInfo, summary, experience, education, skills, projects, certifications, publications, awards, settings, personalDetails = [] } = doc;
   const paper = settings.paperSize === 'letter' ? 'letterpaper' : 'a4paper';
   const margin = settings.margins === 'compact' ? '0.5in' : settings.margins === 'generous' ? '0.85in' : '0.7in';
 
@@ -121,6 +121,16 @@ ${edu.honors ? `\\\\{\\footnotesize\\color{secondaryText}\\textbullet\\; ${esc(e
 \\begin{itemize}[leftmargin=0pt, label={}]
 ${skills.map(sk => `  \\item \\textbf{${esc(sk.category)}:} ${sk.items.map(i => esc(i)).join(' $\\cdot$ ')}`).join('\n')}
 \\end{itemize}
+
+${personalDetails.length > 0 ? `
+% ------------------------------------------------------------------------------
+% PERSONAL DETAILS & ADDITIONAL INFORMATION
+% ------------------------------------------------------------------------------
+\\section{Personal Details}
+\\begin{itemize}[leftmargin=0pt, label={}]
+${personalDetails.map(pd => `  \\item \\textbf{${esc(pd.label)}:} ${esc(pd.value)}`).join('\n')}
+\\end{itemize}
+` : ''}
 
 ${projects.length > 0 ? `
 % ------------------------------------------------------------------------------
