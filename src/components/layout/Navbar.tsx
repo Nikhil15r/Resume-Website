@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ArrowUpRight } from 'lucide-react';
+import { Menu, X, ArrowUpRight, LogIn } from 'lucide-react';
 import { useCV } from '../../context/CVContext';
+import { useAuth } from '../../context/AuthContext';
+import { UserMenu } from '../auth/UserMenu';
 
 export const Navbar: React.FC = () => {
   const location = useLocation();
   const { currentDoc } = useCV();
+  const { user, openAuthModal } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
@@ -58,8 +61,30 @@ export const Navbar: React.FC = () => {
             ))}
           </div>
 
-          {/* Primary Action Button */}
+          {/* Primary Action Button & User Profile */}
           <div className="hidden sm:flex items-center gap-3">
+            {user ? (
+              <UserMenu />
+            ) : (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => openAuthModal('signin')}
+                  className="px-3 py-1.5 text-xs font-medium text-[#4A4845] hover:text-[#0A0A0A] hover:bg-[#EFEEEA] rounded-sm transition-colors flex items-center gap-1.5"
+                >
+                  <LogIn className="w-3.5 h-3.5 text-[#8C8172]" />
+                  <span>Sign In</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openAuthModal('signup')}
+                  className="px-3.5 py-1.5 bg-[#FAF9F7] hover:bg-white text-[#0A0A0A] border border-[#D1CECA] hover:border-[#8C8172] text-xs font-medium rounded-sm transition-colors shadow-subtle"
+                >
+                  Create Account
+                </button>
+              </div>
+            )}
+
             <Link
               to={`/editor/${currentDoc.id}`}
               className="inline-flex items-center gap-2 px-4 py-2 bg-[#0A0A0A] hover:bg-[#8C8172] text-[#F5F5F3] text-xs uppercase tracking-[0.12em] font-medium rounded-sm transition-luxury shadow-subtle group"
@@ -70,7 +95,8 @@ export const Navbar: React.FC = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="flex md:hidden">
+          <div className="flex md:hidden items-center gap-2">
+            {user && <UserMenu />}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-sm text-[#0A0A0A] hover:bg-[#EFEEEA] focus:outline-none"
@@ -83,7 +109,32 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-[#E5E3DF] bg-[#F5F5F3] px-4 pt-2 pb-4 space-y-1">
+        <div className="md:hidden border-b border-[#E5E3DF] bg-[#F5F5F3] px-4 pt-2 pb-4 space-y-2">
+          {!user && (
+            <div className="flex items-center gap-2 pb-2 mb-1 border-b border-[#E5E3DF]">
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openAuthModal('signin');
+                }}
+                className="flex-1 py-2 text-center text-xs font-medium text-[#0A0A0A] bg-white border border-[#D1CECA] rounded-sm"
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openAuthModal('signup');
+                }}
+                className="flex-1 py-2 text-center text-xs font-medium text-white bg-[#0A0A0A] rounded-sm"
+              >
+                Create Account
+              </button>
+            </div>
+          )}
+
           {navLinks.map(link => (
             <Link
               key={link.path}

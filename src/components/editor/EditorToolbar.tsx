@@ -34,6 +34,8 @@ import {
 } from '../../utils/exportUtils';
 import { ResumeParserModal } from '../parser/ResumeParserModal';
 import { ATSHealthCheckModal } from './ATSHealthCheckModal';
+import { useAuth } from '../../context/AuthContext';
+import { UserMenu } from '../auth/UserMenu';
 
 interface EditorToolbarProps {
   zoom: number;
@@ -66,6 +68,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
     redo, 
     setTemplate 
   } = useCV();
+  const { user, openAuthModal } = useAuth();
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [docTitle, setDocTitle] = useState(currentDoc.title);
@@ -442,6 +445,22 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
                 </div>
               </button>
             </div>
+          )}
+        </div>
+
+        {/* User Account / Sign In */}
+        <div className="border-l border-[#E5E3DF] pl-1 sm:pl-2 ml-0.5">
+          {user ? (
+            <UserMenu />
+          ) : (
+            <button
+              type="button"
+              onClick={() => openAuthModal('signin')}
+              className="px-2 sm:px-2.5 py-1.5 text-[11px] sm:text-xs font-medium text-[#0A0A0A] hover:bg-[#EFEEEA] rounded-sm transition-colors border border-[#D1CECA] hover:border-[#8C8172] bg-white shadow-subtle shrink-0"
+              title="Sign in to sync your CV"
+            >
+              Sign In
+            </button>
           )}
         </div>
       </div>

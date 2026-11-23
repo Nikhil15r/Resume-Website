@@ -16,9 +16,14 @@ import {
   SlidersHorizontal,
   Mail,
   Settings,
-  Upload
+  Upload,
+  LogIn,
+  LogOut,
+  ShieldCheck,
+  User as UserIcon
 } from 'lucide-react';
 import { useCV } from '../context/CVContext';
+import { useAuth } from '../context/AuthContext';
 import { TEMPLATES } from '../data/templates';
 import { TemplateId } from '../types/cv';
 import { exportToPdfPrint, downloadPdfDirect } from '../utils/exportUtils';
@@ -37,6 +42,7 @@ export const DashboardPage: React.FC = () => {
     importWorkspaceBackup,
     resetToDefault
   } = useCV();
+  const { user, openAuthModal, signOut, isConfigured } = useAuth();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'my-cvs' | 'templates' | 'latex' | 'cover-letters' | 'settings'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
@@ -213,19 +219,54 @@ export const DashboardPage: React.FC = () => {
 
         {/* Profile Card / User footer */}
         <div className="pt-6 border-t border-[#E5E3DF]">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#8C8172] text-white flex items-center justify-center font-serif font-bold text-xs">
-              JT
-            </div>
-            <div className="overflow-hidden">
-              <div className="text-xs font-semibold text-[#0A0A0A] truncate">
-                {documents[0]?.personalInfo?.fullName || 'Julian Thorne'}
+          {user ? (
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5 overflow-hidden">
+                {user.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.fullName}
+                    className="w-8 h-8 rounded-full object-cover border border-[#D1CECA] shrink-0"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center font-mono font-bold text-xs shrink-0">
+                    {user.fullName ? user.fullName[0].toUpperCase() : 'U'}
+                  </div>
+                )}
+                <div className="overflow-hidden">
+                  <div className="text-xs font-semibold text-[#0A0A0A] truncate">
+                    {user.fullName}
+                  </div>
+                  <div className="text-[10px] text-[#807D7A] truncate font-mono">
+                    {user.email}
+                  </div>
+                </div>
               </div>
-              <div className="text-[10px] text-[#807D7A] truncate">
-                Executive Edition
-              </div>
+
+              <button
+                type="button"
+                onClick={() => signOut()}
+                className="p-1.5 text-[#807D7A] hover:text-red-600 hover:bg-white rounded transition-colors shrink-0"
+                title="Sign Out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
             </div>
-          </div>
+          ) : (
+            <div className="p-3 bg-white/70 border border-[#D1CECA] rounded text-center space-y-2">
+              <div className="text-[11px] font-medium text-[#0A0A0A] leading-tight">
+                Save &amp; Sync Across Devices
+              </div>
+              <button
+                type="button"
+                onClick={() => openAuthModal('signin')}
+                className="w-full py-1.5 px-3 bg-[#0A0A0A] hover:bg-[#8C8172] text-white text-[11px] font-mono uppercase tracking-wider font-semibold rounded-sm transition-colors flex items-center justify-center gap-1.5"
+              >
+                <LogIn className="w-3 h-3" />
+                <span>Sign In / Sign Up</span>
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -306,6 +347,83 @@ export const DashboardPage: React.FC = () => {
                 {backupMessage}
               </div>
             )}
+
+            {/* Authentication & User Account Dossier */}
+            <div className="bg-white border border-[#E5E3DF] rounded-sm p-6 sm:p-8 space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h2 className="font-serif text-2xl font-medium text-[#0A0A0A]">
+                      Authentication &amp; User Account
+                    </h2>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider flex items-center gap-1 ${
+                        isConfigured
+                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                          : 'bg-amber-50 text-amber-850 border border-amber-200'
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${isConfigured ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                      {isConfigured ? 'Live Supabase Auth' : 'Demo Sandbox Mode'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#807D7A] leading-relaxed max-w-2xl">
+                    Secure login with Google OAuth or Email &amp; Password. Keep your resumes synchronized across devices with zero server cost.
+                  </p>
+                </div>
+
+                {user ? (
+                  <button
+                    type="button"
+                    onClick={() => signOut()}
+                    className="px-4 py-2 text-xs font-mono uppercase tracking-wider text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 rounded-sm transition-colors flex items-center gap-1.5 self-start sm:self-auto"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Sign Out</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => openAuthModal('signin')}
+                    className="px-5 py-2.5 bg-[#0A0A0A] hover:bg-[#8C8172] text-white text-xs font-mono uppercase tracking-wider font-semibold rounded-sm transition-colors flex items-center gap-2 shadow-subtle shrink-0"
+                  >
+                    <LogIn className="w-3.5 h-3.5" />
+                    <span>Sign In or Register</span>
+                  </button>
+                )}
+              </div>
+
+              {user ? (
+                <div className="p-4 bg-[#F5F5F3] border border-[#E5E3DF] rounded-sm grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <div className="text-[10px] font-mono uppercase text-[#807D7A]">Full Name</div>
+                    <div className="text-sm font-semibold text-[#0A0A0A] mt-0.5">{user.fullName}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-mono uppercase text-[#807D7A]">Email Address</div>
+                    <div className="text-sm font-mono text-[#0A0A0A] mt-0.5">{user.email}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-mono uppercase text-[#807D7A]">Provider</div>
+                    <div className="text-sm font-medium text-[#8C8172] mt-0.5 capitalize flex items-center gap-1">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      <span>{user.provider === 'google' ? 'Google OAuth' : 'Email & Password'}</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 bg-[#FAF9F7] border border-dashed border-[#D1CECA] rounded text-xs text-[#807D7A] flex items-center justify-between">
+                  <span>You are currently browsing as a Guest. Sign in to link your portfolio to your cloud account.</span>
+                  <button
+                    type="button"
+                    onClick={() => openAuthModal('signup')}
+                    className="text-xs font-semibold text-[#0A0A0A] hover:text-[#8C8172] underline ml-2 shrink-0"
+                  >
+                    Create Free Account
+                  </button>
+                </div>
+              )}
+            </div>
 
             <div className="bg-white border border-[#E5E3DF] rounded-sm p-6 sm:p-8 space-y-6">
               <div>
