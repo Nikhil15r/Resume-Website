@@ -373,14 +373,25 @@ export const DashboardPage: React.FC = () => {
                 </div>
 
                 {user ? (
-                  <button
-                    type="button"
-                    onClick={() => signOut()}
-                    className="px-4 py-2 text-xs font-mono uppercase tracking-wider text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 rounded-sm transition-colors flex items-center gap-1.5 self-start sm:self-auto"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>Sign Out</span>
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                    {user.provider === 'email' && (
+                      <button
+                        type="button"
+                        onClick={() => openAuthModal('reset_password')}
+                        className="px-4 py-2 text-xs font-mono uppercase tracking-wider text-[#0A0A0A] hover:bg-[#EFEEEA] border border-[#D1CECA] rounded-sm transition-colors"
+                      >
+                        Change Password
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => signOut()}
+                      className="px-4 py-2 text-xs font-mono uppercase tracking-wider text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 rounded-sm transition-colors flex items-center gap-1.5"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
                 ) : (
                   <button
                     type="button"

@@ -1,6 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { X, Mail, Lock, User, ArrowRight, CheckCircle2, AlertCircle, Eye, EyeOff, Sparkles, KeyRound } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  X,
+  Mail,
+  Lock,
+  User,
+  ArrowRight,
+  CheckCircle2,
+  AlertCircle,
+  Eye,
+  EyeOff,
+  KeyRound,
+  Wand2,
+  Send
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+
+function evaluatePasswordStrength(password: string): { score: number; label: string; color: string } {
+  if (!password) return { score: 0, label: '', color: 'bg-[#E5E3DF]' };
+  let score = 0;
+  if (password.length >= 8) score += 1;
+  if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score += 1;
+  if (/\d/.test(password)) score += 1;
+  if (/[^A-Za-z0-9]/.test(password)) score += 1;
+
+  if (score <= 1) return { score: 1, label: 'Weak', color: 'bg-red-500' };
+  if (score === 2) return { score: 2, label: 'Fair', color: 'bg-amber-500' };
+  if (score === 3) return { score: 3, label: 'Good', color: 'bg-emerald-500' };
+  return { score: 4, label: 'Strong', color: 'bg-emerald-700' };
+}
 
 export const AuthModal: React.FC = () => {
   const {
@@ -10,10 +37,16 @@ export const AuthModal: React.FC = () => {
     setAuthModalView,
     signInWithEmail,
     signUpWithEmail,
+    signInWithMagicLink,
+    resendConfirmationEmail,
     signInWithGoogle,
     sendPasswordResetEmail,
     updatePassword,
-    isConfigured
+    isConfigured,
+    hasUrl,
+    hasApiKey,
+    externalError,
+    clearExternalError
   } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -22,24 +55,51 @@ export const AuthModal: React.FC = () => {
   const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showResendPrompt, setShowResendPrompt] = useState(false);
   const [showKeyInstructions, setShowKeyInstructions] = useState(false);
 
-  // Reset form inputs when view changes or modal closes
+  const passwordStrength = useMemo(() => evaluatePasswordStrength(password), [password]);
+
   useEffect(() => {
-    setError(null);
+    setError(externalError || null);
     setSuccessMessage(null);
+    setShowResendPrompt(false);
     setPassword('');
     setConfirmPassword('');
-  }, [authModalView, isAuthModalOpen]);
+  }, [authModalView, isAuthModalOpen, externalError]);
 
   if (!isAuthModalOpen) return null;
 
+  const handleViewSwitch = (view: typeof authModalView) => {
+    clearExternalError();
+    setAuthModalView(view);
+  };
+
+  const handleResendConfirmation = async () => {
+    setError(null);
+    setResendingEmail(true);
+    try {
+      const res = await resendConfirmationEmail(email);
+      if (res.success) {
+        setSuccessMessage(res.message || 'Verification email re-sent.');
+        setShowResendPrompt(false);
+      } else {
+        setError(res.error || 'Could not resend verification email.');
+      }
+    } finally {
+      setResendingEmail(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    clearExternalError();
     setError(null);
     setSuccessMessage(null);
+    setShowResendPrompt(false);
     setLoading(true);
 
     try {
@@ -47,15 +107,18 @@ export const AuthModal: React.FC = () => {
         const res = await signInWithEmail(email, password);
         if (!res.success) {
           setError(res.error || 'Failed to sign in. Please verify your email and password.');
+          if (res.unconfirmedEmail) {
+            setShowResendPrompt(true);
+          }
         }
       } else if (authModalView === 'signup') {
-        if (password !== confirmPassword) {
-          setError('Passwords do not match. Please re-enter.');
+        if (password.length < 8) {
+          setError('Password must be at least 8 characters long.');
           setLoading(false);
           return;
         }
-        if (password.length < 6) {
-          setError('Password must be at least 6 characters long.');
+        if (password !== confirmPassword) {
+          setError('Passwords do not match. Please re-enter.');
           setLoading(false);
           return;
         }
@@ -64,6 +127,16 @@ export const AuthModal: React.FC = () => {
           setError(res.error || 'Failed to create account.');
         } else if (res.message) {
           setSuccessMessage(res.message);
+          if (res.needsConfirmation) {
+            setShowResendPrompt(true);
+          }
+        }
+      } else if (authModalView === 'magic_link') {
+        const res = await signInWithMagicLink(email);
+        if (!res.success) {
+          setError(res.error || 'Failed to send magic sign-in link.');
+        } else {
+          setSuccessMessage(res.message || 'Magic link sent! Check your email inbox.');
         }
       } else if (authModalView === 'forgot_password') {
         const res = await sendPasswordResetEmail(email);
@@ -73,6 +146,11 @@ export const AuthModal: React.FC = () => {
           setSuccessMessage(res.message || 'Password reset link sent to your email.');
         }
       } else if (authModalView === 'reset_password') {
+        if (password.length < 8) {
+          setError('Password must be at least 8 characters long.');
+          setLoading(false);
+          return;
+        }
         if (password !== confirmPassword) {
           setError('Passwords do not match.');
           setLoading(false);
@@ -82,8 +160,8 @@ export const AuthModal: React.FC = () => {
         if (!res.success) {
           setError(res.error || 'Failed to update password.');
         } else {
-          setSuccessMessage('Password successfully updated! You can now sign in.');
-          setTimeout(() => setAuthModalView('signin'), 1800);
+          setSuccessMessage('Password successfully updated! You are now signed in.');
+          setTimeout(() => closeAuthModal(), 1600);
         }
       }
     } finally {
@@ -92,6 +170,7 @@ export const AuthModal: React.FC = () => {
   };
 
   const handleGoogleAuth = async () => {
+    clearExternalError();
     setError(null);
     setLoading(true);
     try {
@@ -105,10 +184,13 @@ export const AuthModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div
+      onClick={closeAuthModal}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto"
+    >
       <div
         onClick={e => e.stopPropagation()}
-        className="w-full max-w-md bg-white border border-[#E5E3DF] rounded shadow-2xl overflow-hidden flex flex-col relative"
+        className="w-full max-w-md bg-white border border-[#E5E3DF] rounded shadow-2xl overflow-hidden flex flex-col relative my-auto"
       >
         {/* Top Header */}
         <div className="px-6 py-5 border-b border-[#E5E3DF] bg-[#FAF9F7] flex items-center justify-between">
@@ -120,12 +202,14 @@ export const AuthModal: React.FC = () => {
               <h2 className="font-serif text-lg font-semibold text-[#0A0A0A] leading-tight">
                 {authModalView === 'signin' && 'Welcome Back'}
                 {authModalView === 'signup' && 'Create Your Account'}
+                {authModalView === 'magic_link' && 'Email Magic Link'}
                 {authModalView === 'forgot_password' && 'Reset Password'}
                 {authModalView === 'reset_password' && 'Create New Password'}
               </h2>
               <p className="text-[11px] text-[#807D7A]">
-                {authModalView === 'signin' && 'Sign in to access and sync your CV portfolio'}
+                {authModalView === 'signin' && 'Sign in to access and manage your CV portfolio'}
                 {authModalView === 'signup' && 'Start crafting executive-ready documents'}
+                {authModalView === 'magic_link' && 'Receive a secure 1-click sign-in link via email'}
                 {authModalView === 'forgot_password' && 'Enter your email to receive a recovery link'}
                 {authModalView === 'reset_password' && 'Enter your new secure account password'}
               </p>
@@ -133,6 +217,7 @@ export const AuthModal: React.FC = () => {
           </div>
 
           <button
+            type="button"
             onClick={closeAuthModal}
             className="p-1.5 text-[#807D7A] hover:text-[#0A0A0A] hover:bg-[#EFEEEA] rounded transition-colors"
             title="Close"
@@ -149,7 +234,11 @@ export const AuthModal: React.FC = () => {
                 isConfigured ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
               }`}
             />
-            {isConfigured ? 'Live Supabase Auth (Free)' : 'Demo Sandbox Mode'}
+            {isConfigured
+              ? 'Live Supabase Auth (PKCE)'
+              : hasApiKey && !hasUrl
+              ? 'API Key Detected — Need Project URL'
+              : 'Demo Sandbox Mode'}
           </span>
           {!isConfigured && (
             <button
@@ -157,7 +246,7 @@ export const AuthModal: React.FC = () => {
               onClick={() => setShowKeyInstructions(prev => !prev)}
               className="text-[#8C8172] hover:text-[#0A0A0A] underline"
             >
-              Connect Free API
+              {hasApiKey && !hasUrl ? 'Finish Setup' : 'Connect Free API'}
             </button>
           )}
         </div>
@@ -167,18 +256,36 @@ export const AuthModal: React.FC = () => {
           <div className="p-4 bg-amber-50/70 border-b border-amber-200 text-xs text-amber-900 space-y-2 leading-relaxed">
             <div className="font-semibold flex items-center gap-1 text-amber-950">
               <KeyRound className="w-3.5 h-3.5 text-amber-700" />
-              <span>How to enable 100% Free Supabase Auth:</span>
+              <span>
+                {hasApiKey && !hasUrl
+                  ? 'Add your Supabase Project URL to go live:'
+                  : 'How to enable 100% Free Supabase Auth:'}
+              </span>
             </div>
             <ol className="list-decimal pl-4 space-y-1 text-[11px]">
-              <li>Create a free project at <a href="https://supabase.com" target="_blank" rel="noreferrer" className="font-semibold underline">supabase.com</a> (Free tier: 50,000 active users).</li>
-              <li>Under <strong>Project Settings → API</strong>, copy your <strong>Project URL</strong> and <strong>Anon Public Key</strong>.</li>
-              <li>Add them to your environment variables or <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">.env.local</code>:
-                <pre className="mt-1 bg-white p-2 rounded text-[10px] font-mono text-[#0A0A0A] border border-amber-200 select-all">
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGci...
+              <li>
+                Open your project at{' '}
+                <a href="https://supabase.com/dashboard" target="_blank" rel="noreferrer" className="font-semibold underline">
+                  supabase.com/dashboard
+                </a>
+                .
+              </li>
+              <li>
+                Go to <strong>Project Settings → Data API</strong> (or <strong>General</strong>) and copy your{' '}
+                <strong>Project URL</strong> (<code className="bg-amber-100 px-1 rounded">https://xxxx.supabase.co</code>).
+              </li>
+              <li>
+                Set both variables in <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">.env.local</code> &amp; Vercel:
+                <pre className="mt-1 bg-white p-2 rounded text-[10px] font-mono text-[#0A0A0A] border border-amber-200 select-all overflow-x-auto">
+{`VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_...`}
                 </pre>
               </li>
-              <li>To enable Google login, turn on <strong>Google</strong> under <strong>Authentication → Providers</strong>.</li>
+              <li>
+                For Google login, enable <strong>Google</strong> under <strong>Authentication → Providers</strong> and add{' '}
+                <code className="bg-amber-100 px-1 rounded">{`${window.location.origin}/auth/callback`}</code> under{' '}
+                <strong>URL Configuration → Redirect URLs</strong>.
+              </li>
             </ol>
           </div>
         )}
@@ -187,30 +294,55 @@ VITE_SUPABASE_ANON_KEY=eyJhbGci...
         <div className="p-6 space-y-4">
           {/* Error Message Alert */}
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded text-xs text-red-800 flex items-start gap-2 animate-in fade-in">
-              <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-              <div className="flex-1 leading-snug">{error}</div>
+            <div className="p-3 bg-red-50 border border-red-200 rounded text-xs text-red-800 space-y-2 animate-in fade-in">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                <div className="flex-1 leading-snug">{error}</div>
+              </div>
+              {showResendPrompt && (
+                <button
+                  type="button"
+                  disabled={resendingEmail}
+                  onClick={handleResendConfirmation}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-red-900 underline hover:text-red-700 ml-6"
+                >
+                  <Send className="w-3 h-3" />
+                  <span>{resendingEmail ? 'Resending...' : 'Resend confirmation email'}</span>
+                </button>
+              )}
             </div>
           )}
 
           {/* Success Message Alert */}
           {successMessage && (
-            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-800 flex items-start gap-2 animate-in fade-in">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-              <div className="flex-1 leading-snug">{successMessage}</div>
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-800 space-y-2 animate-in fade-in">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <div className="flex-1 leading-snug">{successMessage}</div>
+              </div>
+              {showResendPrompt && (
+                <button
+                  type="button"
+                  disabled={resendingEmail}
+                  onClick={handleResendConfirmation}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-900 underline hover:text-emerald-700 ml-6"
+                >
+                  <Send className="w-3 h-3" />
+                  <span>{resendingEmail ? 'Sending...' : "Didn't receive it? Resend email"}</span>
+                </button>
+              )}
             </div>
           )}
 
-          {/* Google OAuth Button (Available on Sign In and Sign Up) */}
-          {(authModalView === 'signin' || authModalView === 'signup') && (
+          {/* Google OAuth Button (Available on Sign In, Sign Up, Magic Link) */}
+          {(authModalView === 'signin' || authModalView === 'signup' || authModalView === 'magic_link') && (
             <>
               <button
                 type="button"
                 onClick={handleGoogleAuth}
                 disabled={loading}
-                className="w-full py-2.5 px-4 bg-white hover:bg-[#FAF9F7] text-[#0A0A0A] border border-[#D1CECA] hover:border-[#8C8172] text-xs font-medium rounded transition-all shadow-subtle flex items-center justify-center gap-3 group"
+                className="w-full py-2.5 px-4 bg-white hover:bg-[#FAF9F7] text-[#0A0A0A] border border-[#D1CECA] hover:border-[#8C8172] text-xs font-medium rounded transition-all shadow-subtle flex items-center justify-center gap-3 group disabled:opacity-60"
               >
-                {/* Official Google 'G' SVG Logo */}
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path
                     fill="#4285F4"
@@ -230,7 +362,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGci...
                   />
                 </svg>
                 <span>
-                  {authModalView === 'signin' ? 'Continue with Google' : 'Sign up with Google'}
+                  {authModalView === 'signup' ? 'Sign up with Google' : 'Continue with Google'}
                 </span>
               </button>
 
@@ -255,6 +387,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGci...
                   <input
                     type="text"
                     required
+                    autoComplete="name"
                     value={fullName}
                     onChange={e => setFullName(e.target.value)}
                     placeholder="e.g. Eleanor Vance"
@@ -275,6 +408,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGci...
                   <input
                     type="email"
                     required
+                    autoComplete="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     placeholder="name@organization.com"
@@ -285,7 +419,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGci...
             )}
 
             {/* Password (Sign In, Sign Up, Reset Password) */}
-            {authModalView !== 'forgot_password' && (
+            {(authModalView === 'signin' || authModalView === 'signup' || authModalView === 'reset_password') && (
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-[11px] font-mono uppercase tracking-wider text-[#807D7A]">
@@ -294,7 +428,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGci...
                   {authModalView === 'signin' && (
                     <button
                       type="button"
-                      onClick={() => setAuthModalView('forgot_password')}
+                      onClick={() => handleViewSwitch('forgot_password')}
                       className="text-[11px] text-[#8C8172] hover:text-[#0A0A0A] transition-colors"
                     >
                       Forgot password?
@@ -306,6 +440,8 @@ VITE_SUPABASE_ANON_KEY=eyJhbGci...
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
+                    minLength={authModalView === 'signin' ? undefined : 8}
+                    autoComplete={authModalView === 'signin' ? 'current-password' : 'new-password'}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="••••••••"
@@ -320,6 +456,26 @@ VITE_SUPABASE_ANON_KEY=eyJhbGci...
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+
+                {/* Password Strength Meter (Sign Up & Reset Password) */}
+                {(authModalView === 'signup' || authModalView === 'reset_password') && password.length > 0 && (
+                  <div className="mt-1.5 space-y-1">
+                    <div className="flex gap-1 h-1">
+                      {[1, 2, 3, 4].map(level => (
+                        <div
+                          key={level}
+                          className={`flex-1 rounded-full transition-colors ${
+                            passwordStrength.score >= level ? passwordStrength.color : 'bg-[#E5E3DF]'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex justify-between text-[10px] font-mono text-[#807D7A]">
+                      <span>Minimum 8 characters recommended</span>
+                      <span className="font-semibold text-[#0A0A0A]">{passwordStrength.label}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -334,6 +490,8 @@ VITE_SUPABASE_ANON_KEY=eyJhbGci...
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
+                    minLength={8}
+                    autoComplete="new-password"
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
@@ -356,6 +514,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGci...
                   <span>
                     {authModalView === 'signin' && 'Sign In'}
                     {authModalView === 'signup' && 'Create Account'}
+                    {authModalView === 'magic_link' && 'Send One-Time Link'}
                     {authModalView === 'forgot_password' && 'Send Recovery Email'}
                     {authModalView === 'reset_password' && 'Update Password'}
                   </span>
@@ -365,6 +524,20 @@ VITE_SUPABASE_ANON_KEY=eyJhbGci...
             </button>
           </form>
 
+          {/* Secondary Login Option: Magic Link toggle */}
+          {authModalView === 'signin' && (
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => handleViewSwitch('magic_link')}
+                className="inline-flex items-center gap-1.5 text-[11px] font-mono text-[#8C8172] hover:text-[#0A0A0A] transition-colors"
+              >
+                <Wand2 className="w-3 h-3" />
+                <span>Sign in with passwordless Email Magic Link</span>
+              </button>
+            </div>
+          )}
+
           {/* Bottom Switch Links */}
           <div className="pt-2 text-center text-xs text-[#807D7A] border-t border-[#E5E3DF]">
             {authModalView === 'signin' && (
@@ -372,7 +545,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGci...
                 Don&apos;t have an account?{' '}
                 <button
                   type="button"
-                  onClick={() => setAuthModalView('signup')}
+                  onClick={() => handleViewSwitch('signup')}
                   className="font-semibold text-[#0A0A0A] hover:text-[#8C8172] underline ml-1"
                 >
                   Create one now
@@ -385,7 +558,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGci...
                 Already have an account?{' '}
                 <button
                   type="button"
-                  onClick={() => setAuthModalView('signin')}
+                  onClick={() => handleViewSwitch('signin')}
                   className="font-semibold text-[#0A0A0A] hover:text-[#8C8172] underline ml-1"
                 >
                   Sign in
@@ -393,12 +566,12 @@ VITE_SUPABASE_ANON_KEY=eyJhbGci...
               </p>
             )}
 
-            {(authModalView === 'forgot_password' || authModalView === 'reset_password') && (
+            {(authModalView === 'forgot_password' || authModalView === 'reset_password' || authModalView === 'magic_link') && (
               <p>
-                Remembered your password?{' '}
+                {authModalView === 'magic_link' ? 'Prefer your password?' : 'Remembered your password?'}{' '}
                 <button
                   type="button"
-                  onClick={() => setAuthModalView('signin')}
+                  onClick={() => handleViewSwitch('signin')}
                   className="font-semibold text-[#0A0A0A] hover:text-[#8C8172] underline ml-1"
                 >
                   Return to sign in

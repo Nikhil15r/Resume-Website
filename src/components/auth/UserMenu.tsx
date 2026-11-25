@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { User, LogOut, LayoutDashboard, FileCode, ChevronDown, Shield } from 'lucide-react';
+import { LogOut, LayoutDashboard, FileCode, ChevronDown, Shield, KeyRound } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const UserMenu: React.FC = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, openAuthModal } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -91,6 +91,20 @@ export const UserMenu: React.FC = () => {
               <FileCode className="w-4 h-4 text-[#8C8172]" />
               <span>LaTeX Typeset Studio</span>
             </Link>
+
+            {user.provider === 'email' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  openAuthModal('reset_password');
+                }}
+                className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-[#0A0A0A] hover:bg-[#EFEEEA] transition-colors text-left"
+              >
+                <KeyRound className="w-4 h-4 text-[#8C8172]" />
+                <span>Change Password</span>
+              </button>
+            )}
           </div>
 
           <div className="border-t border-[#E5E3DF] pt-1">
