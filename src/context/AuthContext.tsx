@@ -374,6 +374,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         });
         if (error) {
+          if (error.message.toLowerCase().includes('provider is not enabled')) {
+            return {
+              success: false,
+              error: 'Google Sign-In is not enabled yet in your Supabase project (Authentication → Providers → Google). Please enable it or sign in with Email.'
+            };
+          }
           return { success: false, error: error.message };
         }
         return { success: true };
