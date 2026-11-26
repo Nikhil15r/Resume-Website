@@ -261,7 +261,7 @@ export const LandingPage: React.FC = () => {
                 </li>
                 <li className="flex items-start gap-2.5">
                   <CheckCircle2 className="w-4 h-4 text-[#8C8172] shrink-0 mt-0.5" />
-                  <span>Realistic TeX compilation engine with comprehensive diagnostics and logs.</span>
+                  <span>Live LaTeX editor with syntax validation, diagnostics, and one-click Overleaf export.</span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <CheckCircle2 className="w-4 h-4 text-[#8C8172] shrink-0 mt-0.5" />

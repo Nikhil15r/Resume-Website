@@ -9,7 +9,6 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
-  KeyRound,
   Wand2,
   Send
 } from 'lucide-react';
@@ -42,9 +41,6 @@ export const AuthModal: React.FC = () => {
     signInWithGoogle,
     sendPasswordResetEmail,
     updatePassword,
-    isConfigured,
-    hasUrl,
-    hasApiKey,
     externalError,
     clearExternalError
   } = useAuth();
@@ -59,7 +55,6 @@ export const AuthModal: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showResendPrompt, setShowResendPrompt] = useState(false);
-  const [showKeyInstructions, setShowKeyInstructions] = useState(false);
 
   const passwordStrength = useMemo(() => evaluatePasswordStrength(password), [password]);
 
@@ -134,9 +129,9 @@ export const AuthModal: React.FC = () => {
       } else if (authModalView === 'magic_link') {
         const res = await signInWithMagicLink(email);
         if (!res.success) {
-          setError(res.error || 'Failed to send magic sign-in link.');
+          setError(res.error || 'Failed to send sign-in link.');
         } else {
-          setSuccessMessage(res.message || 'Magic link sent! Check your email inbox.');
+          setSuccessMessage(res.message || 'Sign-in link sent! Check your email inbox.');
         }
       } else if (authModalView === 'forgot_password') {
         const res = await sendPasswordResetEmail(email);
@@ -160,8 +155,8 @@ export const AuthModal: React.FC = () => {
         if (!res.success) {
           setError(res.error || 'Failed to update password.');
         } else {
-          setSuccessMessage('Password successfully updated! You are now signed in.');
-          setTimeout(() => closeAuthModal(), 1600);
+          setSuccessMessage('Password successfully updated!');
+          setTimeout(() => closeAuthModal(), 1500);
         }
       }
     } finally {
@@ -202,16 +197,16 @@ export const AuthModal: React.FC = () => {
               <h2 className="font-serif text-lg font-semibold text-[#0A0A0A] leading-tight">
                 {authModalView === 'signin' && 'Welcome Back'}
                 {authModalView === 'signup' && 'Create Your Account'}
-                {authModalView === 'magic_link' && 'Email Magic Link'}
+                {authModalView === 'magic_link' && 'Email Sign-In Link'}
                 {authModalView === 'forgot_password' && 'Reset Password'}
-                {authModalView === 'reset_password' && 'Create New Password'}
+                {authModalView === 'reset_password' && 'Update Password'}
               </h2>
               <p className="text-[11px] text-[#807D7A]">
-                {authModalView === 'signin' && 'Sign in to access and manage your CV portfolio'}
-                {authModalView === 'signup' && 'Start crafting executive-ready documents'}
+                {authModalView === 'signin' && 'Sign in to access your Atelier CV workspace'}
+                {authModalView === 'signup' && 'Create an account to build executive-ready CVs'}
                 {authModalView === 'magic_link' && 'Receive a secure 1-click sign-in link via email'}
                 {authModalView === 'forgot_password' && 'Enter your email to receive a recovery link'}
-                {authModalView === 'reset_password' && 'Enter your new secure account password'}
+                {authModalView === 'reset_password' && 'Enter your new account password'}
               </p>
             </div>
           </div>
@@ -225,70 +220,6 @@ export const AuthModal: React.FC = () => {
             <X className="w-4 h-4" />
           </button>
         </div>
-
-        {/* Backend Status Banner */}
-        <div className="px-6 py-2 bg-[#F5F5F3] border-b border-[#E5E3DF] flex items-center justify-between text-[11px] font-mono">
-          <span className="flex items-center gap-1.5 text-[#807D7A]">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                isConfigured ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
-              }`}
-            />
-            {isConfigured
-              ? 'Live Supabase Auth (PKCE)'
-              : hasApiKey && !hasUrl
-              ? 'API Key Detected — Need Project URL'
-              : 'Demo Sandbox Mode'}
-          </span>
-          {!isConfigured && (
-            <button
-              type="button"
-              onClick={() => setShowKeyInstructions(prev => !prev)}
-              className="text-[#8C8172] hover:text-[#0A0A0A] underline"
-            >
-              {hasApiKey && !hasUrl ? 'Finish Setup' : 'Connect Free API'}
-            </button>
-          )}
-        </div>
-
-        {/* Setup Guide Collapsible */}
-        {showKeyInstructions && !isConfigured && (
-          <div className="p-4 bg-amber-50/70 border-b border-amber-200 text-xs text-amber-900 space-y-2 leading-relaxed">
-            <div className="font-semibold flex items-center gap-1 text-amber-950">
-              <KeyRound className="w-3.5 h-3.5 text-amber-700" />
-              <span>
-                {hasApiKey && !hasUrl
-                  ? 'Add your Supabase Project URL to go live:'
-                  : 'How to enable 100% Free Supabase Auth:'}
-              </span>
-            </div>
-            <ol className="list-decimal pl-4 space-y-1 text-[11px]">
-              <li>
-                Open your project at{' '}
-                <a href="https://supabase.com/dashboard" target="_blank" rel="noreferrer" className="font-semibold underline">
-                  supabase.com/dashboard
-                </a>
-                .
-              </li>
-              <li>
-                Go to <strong>Project Settings → Data API</strong> (or <strong>General</strong>) and copy your{' '}
-                <strong>Project URL</strong> (<code className="bg-amber-100 px-1 rounded">https://xxxx.supabase.co</code>).
-              </li>
-              <li>
-                Set both variables in <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">.env.local</code> &amp; Vercel:
-                <pre className="mt-1 bg-white p-2 rounded text-[10px] font-mono text-[#0A0A0A] border border-amber-200 select-all overflow-x-auto">
-{`VITE_SUPABASE_URL=https://your-project-ref.supabase.co
-VITE_SUPABASE_ANON_KEY=sb_publishable_...`}
-                </pre>
-              </li>
-              <li>
-                For Google login, enable <strong>Google</strong> under <strong>Authentication → Providers</strong> and add{' '}
-                <code className="bg-amber-100 px-1 rounded">{`${window.location.origin}/auth/callback`}</code> under{' '}
-                <strong>URL Configuration → Redirect URLs</strong>.
-              </li>
-            </ol>
-          </div>
-        )}
 
         {/* Modal Form Content */}
         <div className="p-6 space-y-4">
@@ -471,7 +402,7 @@ VITE_SUPABASE_ANON_KEY=sb_publishable_...`}
                       ))}
                     </div>
                     <div className="flex justify-between text-[10px] font-mono text-[#807D7A]">
-                      <span>Minimum 8 characters recommended</span>
+                      <span>Minimum 8 characters required</span>
                       <span className="font-semibold text-[#0A0A0A]">{passwordStrength.label}</span>
                     </div>
                   </div>
@@ -514,7 +445,7 @@ VITE_SUPABASE_ANON_KEY=sb_publishable_...`}
                   <span>
                     {authModalView === 'signin' && 'Sign In'}
                     {authModalView === 'signup' && 'Create Account'}
-                    {authModalView === 'magic_link' && 'Send One-Time Link'}
+                    {authModalView === 'magic_link' && 'Send Sign-In Link'}
                     {authModalView === 'forgot_password' && 'Send Recovery Email'}
                     {authModalView === 'reset_password' && 'Update Password'}
                   </span>
@@ -533,7 +464,7 @@ VITE_SUPABASE_ANON_KEY=sb_publishable_...`}
                 className="inline-flex items-center gap-1.5 text-[11px] font-mono text-[#8C8172] hover:text-[#0A0A0A] transition-colors"
               >
                 <Wand2 className="w-3 h-3" />
-                <span>Sign in with passwordless Email Magic Link</span>
+                <span>Sign in with passwordless Email Link</span>
               </button>
             </div>
           )}

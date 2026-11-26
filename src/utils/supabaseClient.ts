@@ -42,9 +42,7 @@ function isValidPublishableKey(value: string | undefined): value is string {
   return value.length >= 20;
 }
 
-export const hasSupabaseApiKey = isValidPublishableKey(rawKey);
-export const hasSupabaseUrl = isValidHttpUrl(rawUrl);
-export const isSupabaseConfigured = hasSupabaseUrl && hasSupabaseApiKey;
+export const isSupabaseConfigured = isValidHttpUrl(rawUrl) && isValidPublishableKey(rawKey);
 
 function createSafeSupabaseClient(): SupabaseClient | null {
   if (!isSupabaseConfigured || !rawUrl || !rawKey) return null;
@@ -58,10 +56,9 @@ function createSafeSupabaseClient(): SupabaseClient | null {
       }
     });
   } catch (err) {
-    console.warn('Failed to initialize Supabase client:', err);
+    console.error('Failed to initialize Supabase client:', err);
     return null;
   }
 }
 
-// Instantiate client if both URL and publishable key are valid; otherwise null (handled gracefully by AuthContext)
 export const supabase: SupabaseClient | null = createSafeSupabaseClient();

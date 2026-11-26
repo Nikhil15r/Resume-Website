@@ -457,7 +457,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
               type="button"
               onClick={() => openAuthModal('signin')}
               className="px-2 sm:px-2.5 py-1.5 text-[11px] sm:text-xs font-medium text-[#0A0A0A] hover:bg-[#EFEEEA] rounded-sm transition-colors border border-[#D1CECA] hover:border-[#8C8172] bg-white shadow-subtle shrink-0"
-              title="Sign in to sync your CV"
+              title="Sign in to your account"
             >
               Sign In
             </button>

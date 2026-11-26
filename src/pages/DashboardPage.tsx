@@ -19,8 +19,7 @@ import {
   Upload,
   LogIn,
   LogOut,
-  ShieldCheck,
-  User as UserIcon
+  ShieldCheck
 } from 'lucide-react';
 import { useCV } from '../context/CVContext';
 import { useAuth } from '../context/AuthContext';
@@ -42,7 +41,7 @@ export const DashboardPage: React.FC = () => {
     importWorkspaceBackup,
     resetToDefault
   } = useCV();
-  const { user, openAuthModal, signOut, isConfigured } = useAuth();
+  const { user, openAuthModal, signOut } = useAuth();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'my-cvs' | 'templates' | 'latex' | 'cover-letters' | 'settings'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
@@ -255,7 +254,7 @@ export const DashboardPage: React.FC = () => {
           ) : (
             <div className="p-3 bg-white/70 border border-[#D1CECA] rounded text-center space-y-2">
               <div className="text-[11px] font-medium text-[#0A0A0A] leading-tight">
-                Save &amp; Sync Across Devices
+                Your Atelier Account
               </div>
               <button
                 type="button"
@@ -356,19 +355,15 @@ export const DashboardPage: React.FC = () => {
                     <h2 className="font-serif text-2xl font-medium text-[#0A0A0A]">
                       Authentication &amp; User Account
                     </h2>
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider flex items-center gap-1 ${
-                        isConfigured
-                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                          : 'bg-amber-50 text-amber-850 border border-amber-200'
-                      }`}
-                    >
-                      <span className={`w-1.5 h-1.5 rounded-full ${isConfigured ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                      {isConfigured ? 'Live Supabase Auth' : 'Demo Sandbox Mode'}
-                    </span>
+                    {user && (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider flex items-center gap-1 bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        Verified Session
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-[#807D7A] leading-relaxed max-w-2xl">
-                    Secure login with Google OAuth or Email &amp; Password. Keep your resumes synchronized across devices with zero server cost.
+                    Manage your Atelier CV account with Google or Email authentication.
                   </p>
                 </div>
 
@@ -424,7 +419,7 @@ export const DashboardPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="p-4 bg-[#FAF9F7] border border-dashed border-[#D1CECA] rounded text-xs text-[#807D7A] flex items-center justify-between">
-                  <span>You are currently browsing as a Guest. Sign in to link your portfolio to your cloud account.</span>
+                  <span>Sign in or create an account to access your personalized workspace profile.</span>
                   <button
                     type="button"
                     onClick={() => openAuthModal('signup')}
@@ -493,7 +488,7 @@ export const DashboardPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    if (window.confirm('Reset all documents to the initial demo state? Current CVs will be replaced.')) {
+                    if (window.confirm('Reset your workspace to the default starter template? Your current CVs will be replaced.')) {
                       resetToDefault();
                     }
                   }}

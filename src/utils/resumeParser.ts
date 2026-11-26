@@ -1,6 +1,43 @@
 import { CVDocument, WorkExperience, Education, SkillCategory, Project, Certification, Publication, PersonalDetailItem } from '../types/cv';
-import { INITIAL_CV } from '../data/mockCV';
 import { parseLatexSource } from './latexParser';
+
+const BLANK_CV_BASE: CVDocument = {
+  id: 'doc-blank',
+  title: 'Imported CV',
+  createdAt: '',
+  lastModified: '',
+  personalInfo: {
+    fullName: '',
+    title: '',
+    email: '',
+    phone: '',
+    location: '',
+    website: '',
+    linkedin: '',
+    github: ''
+  },
+  summary: '',
+  experience: [],
+  education: [],
+  skills: [],
+  personalDetails: [],
+  projects: [],
+  certifications: [],
+  publications: [],
+  awards: [],
+  customSections: [],
+  settings: {
+    templateId: 'corporate-classic',
+    paperSize: 'a4',
+    primaryColor: '#0A0A0A',
+    accentColor: '#8C8172',
+    fontFamily: 'serif',
+    fontSize: 'normal',
+    margins: 'normal',
+    lineSpacing: 'normal',
+    showBorders: true
+  }
+};
 
 export interface ParsingStats {
   confidenceScore: number; // 0 - 100
@@ -103,9 +140,11 @@ export function parseResumeText(rawText: string, formatHint = 'text'): ParsedRes
       if (parsedJson.personalInfo && parsedJson.experience && parsedJson.education) {
         return {
           document: {
-            ...INITIAL_CV,
+            ...BLANK_CV_BASE,
             ...parsedJson,
             id: `doc-${Date.now()}`,
+            createdAt: parsedJson.createdAt || new Date().toISOString(),
+            lastModified: new Date().toISOString(),
             title: parsedJson.title || `Imported CV — ${parsedJson.personalInfo?.fullName || 'Candidate'}`
           },
           stats: {
@@ -150,8 +189,10 @@ export function parseResumeText(rawText: string, formatHint = 'text'): ParsedRes
 
   // 2. LaTeX Source Handler
   if (formatHint === 'latex' || text.includes('\\begin{document}')) {
-    const doc = parseLatexSource(text, INITIAL_CV);
+    const doc = parseLatexSource(text, BLANK_CV_BASE);
     doc.id = `doc-${Date.now()}`;
+    doc.createdAt = new Date().toISOString();
+    doc.lastModified = new Date().toISOString();
     doc.title = `Imported TeX — ${doc.personalInfo.fullName || 'Candidate'}`;
     return {
       document: doc,
@@ -767,8 +808,10 @@ function parseCertifications(lines: string[]): Certification[] {
 function mapJsonResumeToAtelier(json: any): CVDocument {
   const b = json.basics || {};
   return {
-    ...INITIAL_CV,
+    ...BLANK_CV_BASE,
     id: `doc-${Date.now()}`,
+    createdAt: new Date().toISOString(),
+    lastModified: new Date().toISOString(),
     title: `Imported Resume — ${b.name || 'Candidate'}`,
     personalInfo: {
       fullName: b.name || 'Candidate Name',
